@@ -14,7 +14,7 @@ app.use(json());
 app.use(urlencoded({ extended: false }));
 
 // CONTROLLERS
-const usersController = require('./controllers/users.js');
+const usersController = require('./controllers/userController.js');
 app.use('/api/users', usersController);
 
 // LISTEN
