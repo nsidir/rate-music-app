@@ -6,7 +6,6 @@ const Sequelize = require('sequelize');
 const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
 // MIDDLEWARE
 dotenv.config();
 app.use(cors());
