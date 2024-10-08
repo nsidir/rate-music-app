@@ -1,20 +1,21 @@
 <!-- UserDisplay.vue -->
 <template>
   <div class="user-display">
-    <div v-if="displayUsers && displayUsers.length">
+    <div v-if="loading">Loading...</div>
+    <div v-else-if="displayUsers.length">
       <div v-for="(user, index) in displayUsers" :key="index" ref="userElement">
         <h1>User ID: {{ user.user_id }}</h1>
         <h1>Username: {{ user.username }}</h1>
         <h1>Email: {{ user.email }}</h1>
-        <h1>Password: {{ user.password }}</h1>
+        <!-- Avoid displaying the password for security reasons -->
         <hr />
       </div>
     </div>
-    <h1 v-else>Loading...</h1>
+    <div v-else>No users found.</div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 
 const props = defineProps({
@@ -24,7 +25,15 @@ const props = defineProps({
   }
 })
 
-const userData = ref([])
+interface User {
+  user_id: number;
+  username: string;
+  email: string;
+  password: string; // Consider removing this if not used
+}
+
+const userData = ref<User[]>([])
+const loading = ref(true) // Track loading state
 
 const displayUsers = computed(() => {
   if (props.userId !== null) {
@@ -34,6 +43,7 @@ const displayUsers = computed(() => {
 })
 
 const fetchData = async () => {
+  loading.value = true // Set loading to true before fetching
   try {
     const response = await fetch('http://localhost:3001/api/users')
     if (!response.ok) {
@@ -43,7 +53,9 @@ const fetchData = async () => {
     userData.value = json
     console.log(json)
   } catch (error) {
-    console.error(error.message)
+    console.error((error as Error).message)
+  } finally {
+    loading.value = false // Set loading to false after fetching
   }
 }
 

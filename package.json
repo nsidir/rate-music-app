@@ -12,8 +12,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "startbackend": "nodemon ./backend/server.js",
-    "startfrontend": "cd frontend && npm run dev"
+    "backend": "nodemon ./backend/server.js",
+    "frontend": "cd frontend && npm run dev"
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
