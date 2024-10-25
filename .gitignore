@@ -30,4 +30,8 @@ yarn-error.log*
 /frontend/.vscode
 /frontend/.env
 
+# backend
+/backend/node_modules
+/new-backend/node_modules
+
 
