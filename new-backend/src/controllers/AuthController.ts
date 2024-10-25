@@ -41,6 +41,7 @@ export class AuthController {
 
       // Validate user credentials using UserController
       const user = await this.userController.validateUser(username, password);
+      console.log(user);
 
       if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });

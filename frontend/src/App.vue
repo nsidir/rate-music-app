@@ -7,7 +7,7 @@
       <AlbumCarousel />
 
     <main>
-      <RouterView /> <!-- This is where the matched route component will be rendered -->
+      <RouterView />
     </main>
   </div>
 </template>
