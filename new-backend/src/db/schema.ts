@@ -1,6 +1,6 @@
-// src/db/schema.ts
-import { integer, pgTable, primaryKey, varchar } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
+import { integer, pgTable, primaryKey, varchar, check } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // Users table
 export const usersTable = pgTable("users", {
@@ -10,14 +10,22 @@ export const usersTable = pgTable("users", {
   email: varchar({ length: 255 }).notNull().unique(),
 });
 
+// Artists table
+export const artistsTable = pgTable("artists", {
+  artist_id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  artist_name: varchar({ length: 255 }).notNull(),
+});
+
 // Albums table
 export const albumsTable = pgTable("albums", {
   album_id: integer().primaryKey().generatedAlwaysAsIdentity(),
   album_name: varchar({ length: 255 }).notNull(),
-  artist_name: varchar({ length: 255 }).notNull(),
+  artist_id: integer("artist_id")
+    .notNull()
+    .references(() => artistsTable.artist_id),
 });
 
-// Junction table to represent the many-to-many relationship between users and albums
+// Junction table with rating and check constraint
 export const usersToAlbumsTable = pgTable(
   "users_to_albums",
   {
@@ -27,9 +35,11 @@ export const usersToAlbumsTable = pgTable(
     album_id: integer("album_id")
       .notNull()
       .references(() => albumsTable.album_id),
+    rating: integer("rating"),
   },
-  (t) => ({
-    pk: primaryKey(t.user_id, t.album_id), // Composite primary key
+  (table) => ({
+    pk: primaryKey(table.user_id, table.album_id), // Composite primary key
+    ratingCheck: check("rating_check", sql`${table.rating} >= 1 AND ${table.rating} <= 5`), // Check constraint for rating between 1 and 5
   })
 );
 
@@ -38,9 +48,18 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
   usersToAlbums: many(usersToAlbumsTable),
 }));
 
+// Relations for artists
+export const artistsRelations = relations(artistsTable, ({ many }) => ({
+  albums: many(albumsTable),
+}));
+
 // Relations for albums
-export const albumsRelations = relations(albumsTable, ({ many }) => ({
+export const albumsRelations = relations(albumsTable, ({ many, one }) => ({
   usersToAlbums: many(usersToAlbumsTable),
+  artist: one(artistsTable, {
+    fields: [albumsTable.artist_id],
+    references: [artistsTable.artist_id],
+  }),
 }));
 
 // Relations for usersToAlbums junction table

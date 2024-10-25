@@ -15,6 +15,7 @@
 <script setup lang="ts">
 // import UserDisplay from './components/UserDisplay.vue'; // Import UserDisplay component
 import AlbumCarousel from './components/AlbumCarousel.vue'; // Import CarouselTest component
+import { RouterView } from 'vue-router'; // Import RouterView component
 </script>
 
 <style>

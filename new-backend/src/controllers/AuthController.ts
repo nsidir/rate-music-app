@@ -1,16 +1,14 @@
 import { injectable, inject } from 'tsyringe';
 import { Request, Response } from 'express';
-import { UserController } from './UserController'; // Inject UserController
-import bcrypt from 'bcryptjs';
+import { UserController } from './UserController';
 import jwt from 'jsonwebtoken';
 
 @injectable()
 export class AuthController {
   constructor(
-    @inject(UserController) private userController: UserController // Injecting UserController
+    @inject(UserController) private userController: UserController
   ) {}
 
-  // Signup function
   async signup(req: Request, res: Response): Promise<Response> {
     try {
       const { username, password, email } = req.body;
@@ -21,11 +19,11 @@ export class AuthController {
         return res.status(409).json({ error: 'User already exists' });
       }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create new user
-      const newUser = await this.userController.createUser({ username, password: hashedPassword, email });
+      const newUser = await this.userController.createUser({ 
+        username, 
+        password, // Pass plain password, UserService will hash it
+        email 
+      });
 
       return res.status(201).json({ message: 'User created', user: newUser });
     } catch (error) {
@@ -34,7 +32,7 @@ export class AuthController {
     }
   }
 
-  // Login function using userController.validateUser
+  // Login function remains the same
   async login(req: Request, res: Response): Promise<Response> {
     try {
       const { username, password } = req.body;
