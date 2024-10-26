@@ -2,7 +2,7 @@
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { Album, CreateAlbum, UserAlbumAssignment } from "../types";
-import { albumsTable, usersToAlbumsTable } from "../db/schema";
+import { albumsTable, artistsTable, usersToAlbumsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 
@@ -15,8 +15,20 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
     return insertedAlbum;
   }
 
+  // async getAll(): Promise<Album[]> {
+  //   return await this.dbService.getDb().select().from(albumsTable);
+  // }
+
   async getAll(): Promise<Album[]> {
-    return await this.dbService.getDb().select().from(albumsTable);
+    return await this.dbService.getDb().select({
+      album_id: albumsTable.album_id,
+      album_name: albumsTable.album_name,
+      artist_id: albumsTable.artist_id,
+      cover_url: albumsTable.cover_url,
+      artist_name: artistsTable.artist_name,
+    })
+    .from(albumsTable)
+    .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
   }
 
   async getById(id: number): Promise<Album | null> {

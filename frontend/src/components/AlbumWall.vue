@@ -6,7 +6,7 @@ import AlbumDisplay from './AlbumDisplay.vue'
 interface Album {
   album_id: number
   album_name: string
-  artist_id: number
+  artist_name: string
   cover_url: string
 }
 
@@ -58,7 +58,7 @@ onMounted(() => {
         :album="{
           id: album.album_id,
           name: album.album_name,
-        //   artist: album.artist_id,
+          artist: album.artist_name,
           coverUrl: album.cover_url
         }"
         @click="handleAlbumClick"

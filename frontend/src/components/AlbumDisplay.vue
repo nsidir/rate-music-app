@@ -7,7 +7,7 @@ interface Props {
   album: {
     id: number
     name: string
-    // artist: string
+    artist: string
     coverUrl: string
   }
 }
@@ -24,7 +24,7 @@ const emit = defineEmits<{
       class="album-card transition-transform hover:scale-105 cursor-pointer" 
       @click="emit('click', album.id)"
     >
-      <CardContent class="flex flex-col items-center p-4 gap-3">
+      <CardContent class="flex flex-col items-center p-4">
         <div class="relative w-full aspect-square overflow-hidden rounded-md">
           <img
             :src="album.coverUrl"
@@ -34,7 +34,8 @@ const emit = defineEmits<{
           />
         </div>
         <div class="text-center w-full">
-          <h3 class="font-semibold text-lg line-clamp-1">{{ album.name }}</h3>
+            <h3 class="text-black font-semibold text-lg line-clamp-1">{{ album.name }}</h3>
+            <h4 class="text-black text-sm line-clamp-1">{{ album.artist }}</h4>
         </div>
         <div class="flex justify-center w-full mt-2">
           <StarRating />
