@@ -9,7 +9,7 @@ import { RouterView } from 'vue-router'
     <!-- Header -->
     <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div class="container flex h-14 items-center">
-        <h1 class="text-xl font-bold">Album Collection</h1>
+        <h1 class="text-black font-bold">Album Collection</h1>
       </div>
     </header>
 

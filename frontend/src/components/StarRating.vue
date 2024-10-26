@@ -1,61 +1,62 @@
 <template>
-    <div class="rating_wrapper">
-      <div class="rating_stars" @mouseleave="resetHoveredRating" @click="handleStarsClick">
-        <div
-          class="star"
-          v-for="n in 5"
-          :key="n"
-          :class="{'hovered': n <= hoveredRating || n <= clickedRating}"
-          @mouseover="hoverRating(n)"
-          @click.stop="clickRating(n)"
-        ></div>
-      </div>
-      <!-- Display the rating to the right, showing "-/5" when no rating is selected -->
-      <div class="rating_display">
-        {{ clickedRating > 0 ? clickedRating : '-' }} / 5
-      </div>
+  <div class="rating_wrapper">
+    <div class="rating_stars" @mouseleave="resetHoveredRating" @click="handleStarsClick">
+      <div
+        class="star"
+        v-for="n in 5"
+        :key="n"
+        :class="{ 'hovered': n <= hoveredRating || n <= clickedRating }"
+        @mouseover="hoverRating(n)"
+        @click.stop="clickRating(n)"
+      ></div>
     </div>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, ref } from 'vue';
-  
-  export default defineComponent({
-    name: 'StarRating',
-    setup() {
-      const hoveredRating = ref(0);
-      const clickedRating = ref(0);
-  
-      const hoverRating = (rating: number) => {
-        hoveredRating.value = rating;
-      };
-  
-      const clickRating = (rating: number) => {
-        clickedRating.value = rating;
-      };
-  
-      const resetHoveredRating = () => {
+    <div class="rating_display">
+      {{ clickedRating > 0 ? clickedRating : '-' }} / 5
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+
+export default defineComponent({
+  name: 'StarRating',
+  emits: ['rating-selected'], // Define the emit event
+  setup(_, { emit }) {
+    const hoveredRating = ref(0);
+    const clickedRating = ref(0);
+
+    const hoverRating = (rating: number) => {
+      hoveredRating.value = rating;
+    };
+
+    const clickRating = (rating: number) => {
+      clickedRating.value = rating;
+      emit('rating-selected', clickedRating.value); // Emit the clicked rating to the parent
+    };
+
+    const resetHoveredRating = () => {
+      hoveredRating.value = 0;
+    };
+
+    const handleStarsClick = (event: MouseEvent) => {
+      if (event.target === event.currentTarget) {
+        clickedRating.value = 0;
         hoveredRating.value = 0;
-      };
-  
-      const handleStarsClick = (event: MouseEvent) => {
-        if (event.target === event.currentTarget) {
-          clickedRating.value = 0;
-          hoveredRating.value = 0;
-        }
-      };
-  
-      return {
-        hoveredRating,
-        clickedRating,
-        hoverRating,
-        clickRating,
-        resetHoveredRating,
-        handleStarsClick,
-      };
-    },
-  });
-  </script>
+      }
+    };
+
+    return {
+      hoveredRating,
+      clickedRating,
+      hoverRating,
+      clickRating,
+      resetHoveredRating,
+      handleStarsClick,
+    };
+  },
+});
+</script>
   
   <style scoped>
   .rating_wrapper {
