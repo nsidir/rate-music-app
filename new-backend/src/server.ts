@@ -5,16 +5,19 @@ import 'dotenv/config';
 import { container } from 'tsyringe';
 import { UserController } from './controllers/UserController';
 import { AlbumController } from './controllers/AlbumController';
+import { ArtistController } from './controllers/ArtistController';
 import { AuthController } from './controllers/AuthController';
 import { DatabaseService } from './services/DatabaseService';
 import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
+import { ArtistService } from './services/ArtistService';
 import { AuthMiddleware } from './middleware/AuthMiddleware';
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
 container.register(UserService, { useClass: UserService });
 container.register(AlbumService, { useClass: AlbumService });
+container.register(ArtistService, { useClass: ArtistService });
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,6 +30,7 @@ app.use(express.urlencoded({ extended: false }));
 // Controllers
 const userController = container.resolve(UserController);
 const albumController = container.resolve(AlbumController);
+const artistController = container.resolve(ArtistController);
 const authController = container.resolve(AuthController);
 
 // Public routes

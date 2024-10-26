@@ -38,7 +38,8 @@ export const usersToAlbumsTable = pgTable(
     rating: integer("rating"),
   },
   (table) => ({
-    pk: primaryKey(table.user_id, table.album_id), // Composite primary key
+    // pk: primaryKey(table.user_id, table.album_id), // Deprecated
+    pk: primaryKey({ columns: [table.user_id, table.album_id] }),
     ratingCheck: check("rating_check", sql`${table.rating} >= 1 AND ${table.rating} <= 5`), // Check constraint for rating between 1 and 5
   })
 );
