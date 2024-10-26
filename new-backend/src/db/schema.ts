@@ -23,6 +23,7 @@ export const albumsTable = pgTable("albums", {
   artist_id: integer("artist_id")
     .notNull()
     .references(() => artistsTable.artist_id),
+  cover_url: varchar({ length: 255 }).notNull(),
 });
 
 // Junction table with rating and check constraint

@@ -9,6 +9,7 @@ import { UserService } from "../services/UserService";
 import { AlbumService } from "../services/AlbumService";
 import { ArtistService } from "../services/ArtistService";
 import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment } from "../types";
+import { albumCovers } from './AlbumCovers';
 
 // Register services
 container.registerSingleton(DatabaseService);
@@ -56,15 +57,15 @@ async function seedDatabase(): Promise<SeedResult> {
         const albumsToCreate: CreateAlbum[] = createdArtists.map(artist => {
             switch (artist.artist_name) {
                 case 'The Beatles':
-                    return { album_name: 'Abbey Road', artist_id: artist.artist_id };
+                    return { album_name: 'Abbey Road', artist_id: artist.artist_id, cover_url: albumCovers['Abbey Road'] };
                 case 'The Rolling Stones':
-                    return { album_name: 'Sticky Fingers', artist_id: artist.artist_id };
+                    return { album_name: 'Sticky Fingers', artist_id: artist.artist_id, cover_url: albumCovers['Sticky Fingers'] };
                 case 'The Doors':
-                    return { album_name: 'L.A. Woman', artist_id: artist.artist_id };
+                    return { album_name: 'L.A. Woman', artist_id: artist.artist_id, cover_url: albumCovers['L.A. Woman'] };
                 case 'Led Zeppelin':
-                    return { album_name: 'Led Zeppelin IV', artist_id: artist.artist_id };
+                    return { album_name: 'Led Zeppelin IV', artist_id: artist.artist_id, cover_url: albumCovers['Led Zeppelin IV'] };
                 case 'Black Sabbath':
-                    return { album_name: 'Paranoid', artist_id: artist.artist_id };
+                    return { album_name: 'Paranoid', artist_id: artist.artist_id, cover_url: albumCovers['Paranoid'] };
                 default:
                     throw new Error(`Unexpected artist: ${artist.artist_name}`);
             }
