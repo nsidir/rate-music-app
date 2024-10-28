@@ -23,7 +23,8 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
-    "vue": "^3.5.10"
+    "vue": "^3.5.10",
+    "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

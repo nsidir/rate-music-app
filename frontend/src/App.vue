@@ -18,6 +18,7 @@ import { RouterLink, RouterView } from 'vue-router'
       
       <div style="margin-top: 20px;"></div>
       <!--<StarRating />-->
+      <AlbumWall/>
     </div>
     <main>
       <RouterView /> <!-- This is where the matched route component will be rendered -->
