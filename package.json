@@ -17,7 +17,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "backend": "nodemon ./backend/server.js",
+    "backend": "cd new-backend && npx tsx src/server.ts",
     "frontend": "cd frontend && npm run dev"
   },
   "devDependencies": {
