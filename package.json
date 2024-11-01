@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/user-event": "^13.5.0",
     "bcrypt": "^5.1.1",
+    "concurrently": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -18,7 +19,8 @@
   },
   "scripts": {
     "backend": "cd new-backend && npx tsx src/server.ts",
-    "frontend": "cd frontend && npm run dev"
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\""
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
