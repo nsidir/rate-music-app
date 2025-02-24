@@ -7,7 +7,6 @@
     <p><strong>Genre:</strong> {{ album.genre }}</p>
     <div class="user-actions">
       <template v-if="userStore.loggedIn">
-        <!-- StarRating emits rating-selected with a number (or 0 if cleared) -->
         <StarRating @rating-selected="handleRating" />
         <FavoriteIcon :isActive="isFavorite" @toggle="toggleFavorite" />
       </template>
