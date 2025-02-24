@@ -1,4 +1,4 @@
-<!-- src/views/Home.vue -->
+<!-- src/components/Home.vue -->
 <template>
   <div>
     <!-- Bind the searchQuery using v-model -->

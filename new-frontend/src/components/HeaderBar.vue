@@ -13,7 +13,7 @@
       </div>
       <!-- Right Section: Authentication buttons -->
       <div class="right">
-        <template v-if="!loggedIn">
+        <template v-if="!userStore.loggedIn">
           <button class="login" @click="login">Login</button>
           <button class="signup" @click="signup">Signup</button>
         </template>
@@ -25,9 +25,11 @@
   </template>
   
   <script setup lang="ts">
-  import { defineEmits, ref } from 'vue'
   import { useRouter } from 'vue-router'
-  
+  import { useUserStore } from '../stores/user'
+
+  const userStore = useUserStore()
+
   // Define a prop for the search query (v-model).
   const props = defineProps({
     modelValue: {
@@ -53,12 +55,11 @@
 
   
   // Simulated authentication state.
-  const loggedIn = ref(false)
   const router = useRouter()
   
-  const login = () => {
+  function login() {
     console.log("Login clicked")
-    loggedIn.value = true
+    userStore.login()
   }
   
   const signup = () => {

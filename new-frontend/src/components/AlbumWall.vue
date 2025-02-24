@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps } from 'vue'
+import { ref, computed } from 'vue'
 import albumsData from '../assets/albums.json'
 import { albumCovers } from '../AlbumCovers'
 
