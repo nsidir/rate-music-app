@@ -8,7 +8,7 @@ To run the application locally, follow these steps:
 
 ```bash
 npm install           # Install root dependencies
-cd frontend && npm install       # Install frontend dependencies
+cd new frontend && npm install       # Install frontend dependencies
 cd ../new-backend && npm install # Install backend dependencies
 ```
 
