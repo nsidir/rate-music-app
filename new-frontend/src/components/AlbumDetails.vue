@@ -1,19 +1,22 @@
 <template>
-  <div class="album-details" v-if="album">
-    <img :src="albumCovers[album.title] || album.cover" :alt="album.title" class="album-cover" />
-    <h1>{{ album.title }}</h1>
-    <h2>{{ album.artist }}</h2>
-    <p><strong>Year:</strong> {{ album.year }}</p>
-    <p><strong>Genre:</strong> {{ album.genre }}</p>
-    <div class="user-actions">
-      <template v-if="userStore.loggedIn">
-        <StarRating @rating-selected="handleRating" />
-        <FavoriteIcon :isActive="isFavorite" @toggle="toggleFavorite" />
-      </template>
+  <div>
+    <HeaderBar v-model:modelValue="searchQuery" />
+    <div class="album-details" v-if="album">
+      <img :src="albumCovers[album.title] || album.cover" :alt="album.title" class="album-cover" />
+      <h1>{{ album.title }}</h1>
+      <h2>{{ album.artist }}</h2>
+      <p><strong>Year:</strong> {{ album.year }}</p>
+      <p><strong>Genre:</strong> {{ album.genre }}</p>
+      <div class="user-actions">
+        <template v-if="userStore.loggedIn">
+          <StarRating @rating-selected="handleRating" />
+          <FavoriteIcon :isActive="isFavorite" @toggle="toggleFavorite" />
+        </template>
+      </div>
     </div>
-  </div>
-  <div v-else class="not-found">
-    <p>Album not found.</p>
+    <div v-else class="not-found">
+      <p>Album not found.</p>
+    </div>
   </div>
 </template>
 
@@ -25,6 +28,9 @@ import { albumCovers } from '../AlbumCovers'
 import StarRating from './StarRating.vue'
 import FavoriteIcon from './FavoriteIcon.vue'
 import { useUserStore } from '../stores/user'
+import HeaderBar from './HeaderBar.vue'
+
+const searchQuery = ref('')
 
 interface Album {
   id: string

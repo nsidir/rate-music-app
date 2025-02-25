@@ -1,6 +1,12 @@
 <!-- src/components/HeaderBar.vue -->
 <template>
     <header class="header">
+      <!-- Left Section: Home -->
+      <div class="left">
+        <router-link to="/">
+          <img src="/favicon.ico" alt="Rate Your Music" class="home-logo" />
+        </router-link>
+      </div>
       <!-- Middle Section: Search Bar -->
       <div class="middle">
         <input
@@ -80,6 +86,13 @@
     background-color: transparent;
     padding: 10px 20px;
     color: #fff;
+  }
+
+  .home-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
   }
   
   .middle {
