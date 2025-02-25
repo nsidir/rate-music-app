@@ -1,3 +1,4 @@
+//TODO Integrate it
 async function searchAlbumCover(albumName, artistName) {
     try {
         console.log("Step 1: Searching for the album in MusicBrainz...");
