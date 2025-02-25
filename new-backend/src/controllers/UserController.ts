@@ -34,4 +34,30 @@ export class UserController {
   async validateUser(username: string, password: string): Promise<User | null> {
     return await this.userService.validate(username, password);
   }
+
+  async getUserProfile(req: any, res: any): Promise<void> {
+    try {
+      const { id } = req.params;
+      const userId = Number(id);
+      const user = await this.userService.getById(userId);
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      const ratings = await this.userService.getUserRatings(userId);
+      const favorites = await this.userService.getUserFavorites(userId);
+      res.json({ user, ratings, favorites });
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching user profile' });
+    }
+  }
+
+
+  async getUserRatings(userId: number): Promise<User[]> {
+    return await this.userService.getUserRatings(userId);
+  }
+
+  async getUserFavorites(userId: number): Promise<User[]> {
+    return await this.userService.getUserFavorites(userId);
+  }
 }

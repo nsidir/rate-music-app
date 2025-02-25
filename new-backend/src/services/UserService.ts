@@ -2,8 +2,8 @@
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { User, CreateUser } from "../types";
-import { usersTable } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { usersTable, usersToAlbumsTable } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import bcrypt from 'bcrypt';
 
@@ -64,5 +64,28 @@ export class UserService implements IEntityService<User, CreateUser> {
       return user;
     }
     return null;
+  }
+
+  // Fetch all rating records for the given user.
+  async getUserRatings(userId: number): Promise<any[]> {
+    return await this.dbService.getDb()
+      .select()
+      .from(usersToAlbumsTable)
+      .where(eq(usersToAlbumsTable.user_id, userId))
+      .execute();
+  }
+
+  // Fetch only favorite albums (where favorite is true) for the given user.
+  async getUserFavorites(userId: number): Promise<any[]> {
+    return await this.dbService.getDb()
+      .select()
+      .from(usersToAlbumsTable)
+      .where(
+        and(
+          eq(usersToAlbumsTable.user_id, userId),
+          eq(usersToAlbumsTable.favorite, true)
+        )
+      )
+      .execute();
   }
 }

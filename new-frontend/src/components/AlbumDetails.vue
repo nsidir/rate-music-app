@@ -50,7 +50,7 @@ const album = computed(() => albums.find(a => a.id === route.params.id))
 const rating = ref<number>(0)  // 0 means "no rating"
 const isFavorite = ref(false)
 
-// Custom debounce updater (without Lodash)
+// Custom debounce updater
 function createDebouncedUpdater(fn: () => void, delay: number) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 

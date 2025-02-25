@@ -9,7 +9,6 @@ import { UserService } from "../services/UserService";
 import { AlbumService } from "../services/AlbumService";
 import { ArtistService } from "../services/ArtistService";
 import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment } from "../types";
-import { albumCovers } from './AlbumCovers';
 
 // Register services
 container.registerSingleton(DatabaseService);
@@ -57,15 +56,15 @@ async function seedDatabase(): Promise<SeedResult> {
         const albumsToCreate: CreateAlbum[] = createdArtists.map(artist => {
             switch (artist.artist_name) {
                 case 'The Beatles':
-                    return { album_name: 'Abbey Road', artist_id: artist.artist_id, cover_url: albumCovers['Abbey Road'] };
+                    return { album_name: 'Abbey Road', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25' };
                 case 'The Rolling Stones':
-                    return { album_name: 'Sticky Fingers', artist_id: artist.artist_id, cover_url: albumCovers['Sticky Fingers'] };
+                    return { album_name: 'Sticky Fingers', artist_id: artist.artist_id, cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg' };
                 case 'The Doors':
-                    return { album_name: 'L.A. Woman', artist_id: artist.artist_id, cover_url: albumCovers['L.A. Woman'] };
+                    return { album_name: 'L.A. Woman', artist_id: artist.artist_id, cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg' };
                 case 'Led Zeppelin':
-                    return { album_name: 'Led Zeppelin IV', artist_id: artist.artist_id, cover_url: albumCovers['Led Zeppelin IV'] };
+                    return { album_name: 'Led Zeppelin IV', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee' };
                 case 'Black Sabbath':
-                    return { album_name: 'Paranoid', artist_id: artist.artist_id, cover_url: albumCovers['Paranoid'] };
+                    return { album_name: 'Paranoid', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5' };
                 default:
                     throw new Error(`Unexpected artist: ${artist.artist_name}`);
             }
@@ -100,10 +99,10 @@ async function assignAlbums(
         }
 
         const assignments: UserAlbumAssignment[] = [
-            { user_id: johnDoe.user_id, album_id: abbeyRoad.album_id, rating: 5 },
-            { user_id: johnDoe.user_id, album_id: stickyFingers.album_id, rating: 4 },
-            { user_id: johnDoe.user_id, album_id: laWoman.album_id, rating: 3 },
-            { user_id: janeDoe.user_id, album_id: laWoman.album_id, rating: 5 }
+            { user_id: johnDoe.user_id, album_id: abbeyRoad.album_id, rating: 5, favorite: true },
+            { user_id: johnDoe.user_id, album_id: stickyFingers.album_id, rating: 4, favorite: true },
+            { user_id: johnDoe.user_id, album_id: laWoman.album_id, rating: 3, favorite: false },
+            { user_id: janeDoe.user_id, album_id: laWoman.album_id, rating: 5, favorite: true }
         ];
 
         await albumController.assignAlbums(assignments);

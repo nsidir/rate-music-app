@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import { container } from 'tsyringe';
@@ -35,21 +35,30 @@ const authController = container.resolve(AuthController);
 
 // Public routes
 app.post('/api/signup', (req, res, next) => {
-  authController.signup(req, res).catch(next); // Use the AuthController for signup
+  authController.signup(req, res).catch(next);
 });
 
 app.post('/api/login', (req, res, next) => {
-  authController.login(req, res).catch(next); // Use the AuthController for login
+  authController.login(req, res).catch(next);
 });
 
-// Protected routes
-// app.get('/api/albums', AuthMiddleware.authenticateJWT, (req, res, next) => {
-//   albumController.getAllAlbums().then(albums => res.json(albums)).catch(next); // Handle errors and return response
-// });
-
+// Albums (public endpoint)
 app.get('/api/albums', (req, res, next) => {
-  albumController.getAllAlbums().then(albums => res.json(albums)).catch(next); // Handle errors and return response
+  albumController
+    .getAllAlbums()
+    .then((albums) => res.json(albums))
+    .catch(next);
 });
+
+// New public endpoint: Get a user's profile info (favorites and ratings)
+app.get('/api/user/profile/:id', (req: Request, res: Response, next: NextFunction) => {
+  userController.getUserProfile(req, res).catch(next);
+});
+
+// Other protected endpoints (for adding ratings/favorites) require authentication:
+// For example, to add or update a rating/favorite, use:
+// app.post('/api/user/ratings', AuthMiddleware.authenticateJWT, (req, res, next) => { ... });
+// app.post('/api/user/favorites', AuthMiddleware.authenticateJWT, (req, res, next) => { ... });
 
 // Start the server
 app.listen(port, () => {

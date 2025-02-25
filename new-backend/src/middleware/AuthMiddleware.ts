@@ -2,20 +2,35 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export class AuthMiddleware {
-  static authenticateJWT(req: Request, res: Response, next: NextFunction): void {
-    const token = req.headers.authorization?.split(' ')[1];
+// Extend Express's Request interface to include a user property.
+export interface AuthenticatedRequest extends Request {
+  user?: any;
+}
 
-    if (!token) {
+export class AuthMiddleware {
+  static authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ error: 'Access denied. No token provided.' });
       return;
     }
-
+    
+    const token = authHeader.split(' ')[1];
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not set in the environment variables.');
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretkey');
-      (req as any).user = decoded; // Attach user data to request object
+      const decoded = jwt.verify(token, jwtSecret);
+      req.user = decoded; // Attach user data to request object.
       next();
     } catch (error) {
+      console.error('JWT verification error:', error);
       res.status(403).json({ error: 'Invalid or expired token' });
     }
   }
