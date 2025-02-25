@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "frontend": "cd frontend && npm run dev",
+    "frontend": "cd new-frontend && npm run dev",
     "backend": "cd new-backend && npx tsx src/server.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\""
   },
