@@ -19,7 +19,9 @@
         "@services/*": ["src/services/*"],       // Path mapping for services
         "@models/*": ["src/models/*"],           // Path mapping for models
         "@db/*": ["src/db/*"]                    // Path mapping for database-related files
-      }
+      },
+      "types": ["node"],                         // Include type definitions for Node.js
+      "typeRoots": ["node_modules/@types"]       // Specify the location of type definition files
     },
     "include": ["src/**/*.ts"],                  // Include all TypeScript files in the src directory
     "exclude": ["node_modules", "dist"]          // Exclude node_modules and dist directories

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, primaryKey, varchar, check } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, varchar, check, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Users table
@@ -37,6 +37,7 @@ export const usersToAlbumsTable = pgTable(
       .notNull()
       .references(() => albumsTable.album_id),
     rating: integer("rating"),
+    favorite: boolean("favorite").notNull().default(false),
   },
   (table) => ({
     // pk: primaryKey(table.user_id, table.album_id), // Deprecated
