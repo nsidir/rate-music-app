@@ -56,7 +56,7 @@ app.post('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req
     const albumId = parseInt(req.params.id, 10);
     const userId = req.user.id;
     const result = await userController.addFavorite(userId, albumId);
-    res.json({ message: "Album added to favorites", result });
+    res.json({ message: `Album with id:${albumId} added to favorites of user with id:${userId} `, result });
   } catch (error) {
     next(error);
   }
@@ -67,10 +67,6 @@ app.get('/api/user/profile/:id', (req: Request, res: Response, next: NextFunctio
   userController.getUserProfile(req, res).catch(next);
 });
 
-// Other protected endpoints (for adding ratings/favorites) require authentication:
-// For example, to add or update a rating/favorite, use:
-// app.post('/api/user/ratings', AuthMiddleware.authenticateJWT, (req, res, next) => { ... });
-// app.post('/api/user/favorites', AuthMiddleware.authenticateJWT, (req, res, next) => { ... });
 
 // Start the server
 app.listen(port, () => {

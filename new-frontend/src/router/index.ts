@@ -1,8 +1,9 @@
-// src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import AlbumDetails from '../components/AlbumDetails.vue'
 import Home from '../components/Home.vue'
+import AlbumDetails from '../components/AlbumDetails.vue'
+import Login from '../components/Login.vue'
+import Signup from '../components/Signup.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,6 +16,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'AlbumDetails',
     component: AlbumDetails,
     props: true
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
+  },
+  {
+    path: '/signup',
+    name: 'Signup',
+    component: Signup
   }
 ]
 
