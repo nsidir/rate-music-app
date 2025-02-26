@@ -88,4 +88,29 @@ export class UserService implements IEntityService<User, CreateUser> {
       )
       .execute();
   }
+
+  // Add album to user's favorites using an upsert
+  async addFavorite(userId: number, albumId: number): Promise<void> {
+    await this.dbService.getDb()
+      .insert(usersToAlbumsTable)
+      .values({
+        user_id: userId,
+        album_id: albumId,
+        favorite: true,
+      })
+      .onConflictDoUpdate({
+        target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
+        set: { favorite: true },
+      });
+  }
+
+  // Add album rating for user
+  async addRating(userId: number, albumId: number, rating: number): Promise<void> {
+    await this.dbService.getDb().update(usersToAlbumsTable).set({ rating }).where(
+      and(
+        eq(usersToAlbumsTable.user_id, userId),
+        eq(usersToAlbumsTable.album_id, albumId)
+      )
+    );
+  }
 }
