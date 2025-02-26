@@ -1,3 +1,4 @@
+// src/controllers/AuthController.ts
 import { injectable, inject } from 'tsyringe';
 import { Request, Response } from 'express';
 import { UserController } from './UserController';

@@ -52,6 +52,13 @@ export class UserController {
     }
   }
 
+  async addFavorite(userId: number, albumId: number): Promise<void> {
+    await this.userService.addFavorite(userId, albumId);
+  }
+
+  async addRating(userId: number, albumId: number, rating: number): Promise<void> {
+    await this.userService.addRating(userId, albumId, rating);
+  }
 
   async getUserRatings(userId: number): Promise<User[]> {
     return await this.userService.getUserRatings(userId);

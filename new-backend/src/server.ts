@@ -11,7 +11,7 @@ import { DatabaseService } from './services/DatabaseService';
 import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
-import { AuthMiddleware } from './middleware/AuthMiddleware';
+import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddleware';
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
@@ -50,7 +50,19 @@ app.get('/api/albums', (req, res, next) => {
     .catch(next);
 });
 
-// New public endpoint: Get a user's profile info (favorites and ratings)
+// Add album to favorites
+app.post('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const albumId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+    const result = await userController.addFavorite(userId, albumId);
+    res.json({ message: "Album added to favorites", result });
+  } catch (error) {
+    next(error);
+  }
+});
+
+//Get a user's profile info (favorites and ratings)
 app.get('/api/user/profile/:id', (req: Request, res: Response, next: NextFunction) => {
   userController.getUserProfile(req, res).catch(next);
 });
