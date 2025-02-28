@@ -67,6 +67,12 @@ app.get('/api/user/profile/:id', (req: Request, res: Response, next: NextFunctio
   userController.getUserProfile(req, res).catch(next);
 });
 
+// Search for an album
+app.get('/api/albums/search', (req, res, next) => {
+  albumController.searchAlbum(req, res, next).catch(next);
+});
+
+
 
 // Start the server
 app.listen(port, () => {
