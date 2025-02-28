@@ -32,15 +32,14 @@ export class AlbumController {
     await this.albumService.assignAlbums(assignments);
   }
 
-  // In AlbumController.ts, add a new method:
   async searchAlbum(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { albumName, artistName } = req.query;
-      if (typeof albumName !== 'string' || typeof artistName !== 'string') {
-        res.status(400).json({ error: 'albumName and artistName query parameters are required' });
+      const { albumName } = req.query;
+      if (typeof albumName !== 'string') {
+        res.status(400).json({ error: 'albumName query parameter is required' });
         return;
       }
-      const album = await this.albumService.getOrFetchAlbumInfo(albumName, artistName);
+      const album = await this.albumService.getOrFetchAlbumsInfo(albumName);
       if (album) {
         res.json(album);
       } else {

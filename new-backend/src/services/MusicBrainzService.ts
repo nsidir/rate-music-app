@@ -1,4 +1,5 @@
 // src/services/MusicBrainzService.ts
+
 export async function searchAlbumCover(albumName: string, artistName: string): Promise<string | null> {
     try {
       console.log("Step 1: Searching for the album in MusicBrainz...");
@@ -60,5 +61,43 @@ export async function searchAlbumCover(albumName: string, artistName: string): P
       console.log("Error fetching album data:", error.message);
     }
     return null;
+  }
+  
+  /**
+   * Searches for albums that match the given keyword.
+   * Returns up to 10 album releases from MusicBrainz.
+   */
+  export async function searchAlbumsByKeyword(keyword: string): Promise<any[]> {
+    try {
+      console.log("Searching for albums with keyword:", keyword);
+      const musicbrainzUrl = "https://musicbrainz.org/ws/2/release/";
+      const params = new URLSearchParams({
+        query: keyword,
+        fmt: "json",
+        limit: "10"
+      });
+  
+      const response = await fetch(`${musicbrainzUrl}?${params.toString()}`, {
+        headers: {
+          "User-Agent": "MyMusicApp/1.0"
+        }
+      });
+  
+      console.log("Albums search response status:", response.status);
+      if (response.status !== 200) {
+        console.log("Error fetching album search results:", response.status);
+        return [];
+      }
+      
+      const data = await response.json();
+      if (!data.releases) {
+        console.log("No albums found for the keyword.");
+        return [];
+      }
+      return data.releases;
+    } catch (error: any) {
+      console.log("Error during album search:", error.message);
+      return [];
+    }
   }
   
