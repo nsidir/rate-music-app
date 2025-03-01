@@ -1,132 +1,136 @@
 <!-- src/components/Login.vue -->
 <template>
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <router-link to="/" class="logo-link">
-            <img src="/favicon.ico" alt="Rate Your Music" class="logo" />
-          </router-link>
-          <h1>Welcome Back</h1>
-          <p>Sign in to rate and favorite your music</p>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <router-link to="/" class="logo-link">
+          <img src="/favicon.ico" alt="Rate Your Music" class="logo" />
+        </router-link>
+        <h1>Welcome Back</h1>
+        <p>Sign in to rate and favorite your music</p>
+      </div>
+      
+      <form @submit.prevent="handleLogin" class="auth-form">
+        <div class="form-group" :class="{ 'error': usernameError }">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            v-model="username" 
+            placeholder="Enter your username"
+            required
+            @focus="usernameError = ''"
+          />
+          <span v-if="usernameError" class="error-message">{{ usernameError }}</span>
         </div>
         
-        <form @submit.prevent="handleLogin" class="auth-form">
-          <div class="form-group" :class="{ 'error': emailError }">
-            <label for="email">Email</label>
+        <div class="form-group" :class="{ 'error': passwordError }">
+          <label for="password">Password</label>
+          <div class="password-input">
             <input 
-              type="email" 
-              id="email" 
-              v-model="email" 
-              placeholder="Enter your email"
+              :type="showPassword ? 'text' : 'password'" 
+              id="password" 
+              v-model="password" 
+              placeholder="Enter your password"
               required
-              @focus="emailError = ''"
+              @focus="passwordError = ''"
             />
-            <span v-if="emailError" class="error-message">{{ emailError }}</span>
+            <button 
+              type="button" 
+              class="toggle-password" 
+              @click="showPassword = !showPassword"
+            >
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
           </div>
-          
-          <div class="form-group" :class="{ 'error': passwordError }">
-            <label for="password">Password</label>
-            <div class="password-input">
-              <input 
-                :type="showPassword ? 'text' : 'password'" 
-                id="password" 
-                v-model="password" 
-                placeholder="Enter your password"
-                required
-                @focus="passwordError = ''"
-              />
-              <button 
-                type="button" 
-                class="toggle-password" 
-                @click="showPassword = !showPassword"
-              >
-                {{ showPassword ? 'Hide' : 'Show' }}
-              </button>
-            </div>
-            <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
-          </div>
-          
-          <div class="form-options">
-            <div class="remember-me">
-              <input type="checkbox" id="remember" v-model="rememberMe" />
-              <label for="remember">Remember me</label>
-            </div>
-            <a href="#" class="forgot-password">Forgot password?</a>
-          </div>
-          
-          <button 
-            type="submit" 
-            class="auth-button"
-            :disabled="isLoading"
-          >
-            <span v-if="isLoading" class="loading-spinner"></span>
-            <span v-else>Sign In</span>
-          </button>
-        </form>
-        
-        <div class="auth-footer">
-          <p>Don't have an account? <router-link to="/signup">Sign up</router-link></p>
+          <span v-if="passwordError" class="error-message">{{ passwordError }}</span>
         </div>
+        
+        <div class="form-options">
+          <div class="remember-me">
+            <input type="checkbox" id="remember" v-model="rememberMe" />
+            <label for="remember">Remember me</label>
+          </div>
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+        
+        <button 
+          type="submit" 
+          class="auth-button"
+          :disabled="isLoading"
+        >
+          <span v-if="isLoading" class="loading-spinner"></span>
+          <span v-else>Sign In</span>
+        </button>
+      </form>
+      
+      <div class="auth-footer">
+        <p>Don't have an account? <router-link to="/signup">Sign up</router-link></p>
       </div>
     </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useUserStore } from '../stores/user'
-  
-  const userStore = useUserStore()
-  const router = useRouter()
-  
-  // Form state
-  const email = ref('')
-  const password = ref('')
-  const rememberMe = ref(false)
-  const showPassword = ref(false)
-  const isLoading = ref(false)
-  
-  // Form validation
-  const emailError = ref('')
-  const passwordError = ref('')
-  
-  // Login handler
-  const handleLogin = async () => {
-    // Reset errors
-    emailError.value = ''
-    passwordError.value = ''
-    
-    // Basic validation
-    if (!email.value) {
-      emailError.value = 'Email is required'
-      return
-    }
-    
-    if (!password.value) {
-      passwordError.value = 'Password is required'
-      return
-    }
-    
-    try {
-      isLoading.value = true
-      
-      // Simulated login delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Login user with store
-      userStore.login()
-      
-      // Navigate to home page after successful login
-      router.push('/')
-    } catch (error) {
-      // Handle login error (this would connect to your actual auth system)
-      console.error('Login failed:', error)
-      passwordError.value = 'Invalid email or password'
-    } finally {
-      isLoading.value = false
-    }
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
+
+const apiUrl = import.meta.env.VITE_API_URL
+
+const userStore = useUserStore()
+const router = useRouter()
+
+// Form state
+const username = ref('')
+const password = ref('')
+const rememberMe = ref(false)
+const showPassword = ref(false)
+const isLoading = ref(false)
+
+// Validation errors
+const usernameError = ref('')
+const passwordError = ref('')
+
+// Login handler using your backend JWT endpoint
+const handleLogin = async () => {
+  usernameError.value = ''
+  passwordError.value = ''
+
+  if (!username.value.trim()) {
+    usernameError.value = 'Username is required'
+    return
   }
-  </script>
+  if (!password.value) {
+    passwordError.value = 'Password is required'
+    return
+  }
+
+  try {
+    isLoading.value = true
+    const response = await fetch(`${apiUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.value, password: password.value })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      usernameError.value = data.error || 'Login failed'
+      return
+    }
+    // Save the token in localStorage (or another secure storage)
+    localStorage.setItem('token', data.token)
+    // Update user store if needed
+    userStore.login()
+    router.push('/')
+  } catch (error) {
+    console.error('Login failed:', error)
+    passwordError.value = 'An error occurred during login'
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
   
   <style scoped>
   .auth-container {
@@ -176,8 +180,10 @@
   }
   
   .auth-form {
-    margin-bottom: 20px;
-  }
+  margin-bottom: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
   
   .form-group {
     margin-bottom: 20px;
