@@ -34,20 +34,21 @@ export class AlbumController {
 
   async searchAlbum(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { albumName } = req.query;
-      if (typeof albumName !== 'string') {
-        res.status(400).json({ error: 'albumName query parameter is required' });
+      const { keyword } = req.query;
+      if (typeof keyword !== 'string') {
+        res.status(400).json({ error: 'keyword query parameter is required' });
         return;
       }
-      const album = await this.albumService.getOrFetchAlbumsInfo(albumName);
-      if (album) {
-        res.json(album);
+      const albums = await this.albumService.searchAlbumsInfo(keyword);
+      if (albums.length > 0) {
+        res.json(albums);
       } else {
-        res.status(404).json({ error: 'Album not found' });
+        res.status(404).json({ error: 'No albums found' });
       }
     } catch (error) {
       next(error);
     }
   }
+  
 
 }

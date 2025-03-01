@@ -64,47 +64,50 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
     return album ?? null;
   }
 
-  // New method: search for album using cache aside approach
-  async getOrFetchAlbumsInfo(keyword: string): Promise<Album[]> {
-    const db = this.dbService.getDb();
-    // Call the MusicBrainz API to search for albums matching the keyword
-    const releases = await searchAlbumsByKeyword(keyword);
-    const albums: Album[] = [];
+  // Search for album using cache aside approach
+// This function returns up to 10 album objects matching the keyword,
+// including cover art obtained via the external API.
+// It does NOT insert albums into the database.
+async searchAlbumsInfo(keyword: string): Promise<Album[]> {
+  const db = this.dbService.getDb();
+  // Call the MusicBrainz API to search for albums matching the keyword
+  const releases = await searchAlbumsByKeyword(keyword);
+  const albums: Album[] = [];
 
-    for (const release of releases) {
-      // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
-      const albumName = release.title;
-      const artistCredit = release["artist-credit"];
-      const artistName = Array.isArray(artistCredit) && artistCredit.length > 0 ? artistCredit[0].name : null;
-      if (!albumName || !artistName) continue;
+  for (const release of releases) {
+    // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
+    const albumName: string = release.title;
+    const artistCredit = release["artist-credit"];
+    const artistName: string | null =
+      Array.isArray(artistCredit) && artistCredit.length > 0
+        ? artistCredit[0].name
+        : null;
+    if (!albumName || !artistName) continue;
 
-      // Check if the album already exists in your local cache (database)
-      let album = await this.findAlbumByNameAndArtist(albumName, artistName);
-      if (!album) {
-        // Fetch cover art for this album from the external API
-        const coverUrl = await searchAlbumCover(albumName, artistName);
-        if (!coverUrl) {
-          // If no cover art is found, skip this album
-          continue;
-        }
-
-        // Ensure the artist exists in the database (create if necessary)
-        let [artist] = await db.select().from(artistsTable).where(eq(artistsTable.artist_name, artistName));
-        if (!artist) {
-          [artist] = await db.insert(artistsTable).values({ artist_name: artistName }).returning();
-        }
-
-        // Insert the new album into the database
-        const newAlbumData: CreateAlbum = {
-          album_name: albumName,
-          artist_id: artist.artist_id,
-          cover_url: coverUrl,
-        };
-
-        [album] = await db.insert(albumsTable).values(newAlbumData).returning();
+    // Check if the album already exists in the local cache (database)
+    let album = await this.findAlbumByNameAndArtist(albumName, artistName);
+    if (!album) {
+      // Fetch cover art for this album from the external API
+      const coverUrl = await searchAlbumCover(albumName, artistName);
+      if (!coverUrl) {
+        // If no cover art is found, skip this album
+        continue;
       }
-      albums.push(album);
+
+      // Instead of inserting the album into the DB,
+      // create a temporary album object with dummy IDs (e.g., album_id and artist_id set to 0)
+      album = {
+        album_id: 0, // Indicates not persisted in DB
+        album_name: albumName,
+        artist_id: 0, // No associated artist record in DB yet
+        cover_url: coverUrl,
+        // You can include additional joined info like artist_name if your Album type expects it.
+        artist_name: artistName,
+      } as Album;
     }
-    return albums;
+    albums.push(album);
   }
+  return albums;
+}
+
 }
