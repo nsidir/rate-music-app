@@ -208,7 +208,7 @@ const handleSignup = async () => {
       emailError.value = data.error || 'Signup failed'
       return
     }
-    // Optionally, auto-login here or navigate to login page
+    // Navigate to login page
     router.push('/login')
   } catch (error) {
     console.error('Registration failed:', error)
