@@ -25,6 +25,7 @@
       </template>
       <template v-else>
         <button class="profile" @click="goToProfile">Profile</button>
+        <button class="logout" @click="userStore.logout">Logout</button>
       </template>
     </div>
   </header>

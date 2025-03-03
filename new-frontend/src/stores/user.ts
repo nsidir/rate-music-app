@@ -26,10 +26,9 @@ export const useUserStore = defineStore('user', () => {
     sessionStorage.removeItem('token')
   }
 
-  return {
-    loggedIn,
-    user,
-    login,
-    logout
+  return { loggedIn, user, login, logout }
+}, {
+  persist: {
+    storage: localStorage,
   }
 })
