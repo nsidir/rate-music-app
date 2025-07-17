@@ -2,7 +2,7 @@
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { User, CreateUser } from "../types";
-import { usersTable, usersToAlbumsTable } from "../db/schema";
+import { usersTable, usersToAlbumsTable, albumsTable, artistsTable } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import bcrypt from 'bcrypt';
@@ -69,8 +69,16 @@ export class UserService implements IEntityService<User, CreateUser> {
   // Fetch all rating records for the given user.
   async getUserRatings(userId: number): Promise<any[]> {
     return await this.dbService.getDb()
-      .select()
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_name: artistsTable.artist_name,
+        cover_url: albumsTable.cover_url,
+        rating: usersToAlbumsTable.rating,
+      })
       .from(usersToAlbumsTable)
+      .innerJoin(albumsTable, eq(usersToAlbumsTable.album_id, albumsTable.album_id))
+      .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
       .where(eq(usersToAlbumsTable.user_id, userId))
       .execute();
   }
@@ -78,8 +86,15 @@ export class UserService implements IEntityService<User, CreateUser> {
   // Fetch only favorite albums (where favorite is true) for the given user.
   async getUserFavorites(userId: number): Promise<any[]> {
     return await this.dbService.getDb()
-      .select()
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_name: artistsTable.artist_name,
+        cover_url: albumsTable.cover_url,
+      })
       .from(usersToAlbumsTable)
+      .innerJoin(albumsTable, eq(usersToAlbumsTable.album_id, albumsTable.album_id))
+      .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
       .where(
         and(
           eq(usersToAlbumsTable.user_id, userId),

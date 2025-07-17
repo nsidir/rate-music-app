@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "album-wall-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,15 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.7.7",
-    "vue": "^3.5.10",
-    "vue-router": "^4.4.5"
+    "pinia": "^3.0.1",
+    "pinia-plugin-persistedstate": "^4.2.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.8",
-    "vue-tsc": "^2.1.6"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.1.0",
+    "vue-tsc": "^2.2.0"
   }
 }

@@ -9,8 +9,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import HeaderBar from '../components/HeaderBar.vue'
-import AlbumWall from '../components/AlbumWall.vue'
+import HeaderBar from './HeaderBar.vue'
+import AlbumWall from './AlbumWall.vue'
 
 // Shared reactive search query.
 const searchQuery = ref('')
