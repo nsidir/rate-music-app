@@ -32,15 +32,14 @@ export const usersToAlbumsTable = pgTable(
   {
     user_id: integer("user_id")
       .notNull()
-      .references(() => usersTable.user_id),
+      .references(() => usersTable.user_id, { onDelete: "cascade" }),
     album_id: integer("album_id")
       .notNull()
-      .references(() => albumsTable.album_id),
+      .references(() => albumsTable.album_id, { onDelete: "cascade" }),
     rating: integer("rating"),
     favorite: boolean("favorite").notNull().default(false),
   },
   (table) => ({
-    // pk: primaryKey(table.user_id, table.album_id), // Deprecated
     pk: primaryKey({ columns: [table.user_id, table.album_id] }),
     ratingCheck: check("rating_check", sql`${table.rating} >= 1 AND ${table.rating} <= 5`), // Check constraint for rating between 1 and 5
   })
