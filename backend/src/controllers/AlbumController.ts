@@ -31,6 +31,10 @@ export class AlbumController {
   async assignAlbums(assignments: UserAlbumAssignment[]): Promise<void> {
     await this.albumService.assignAlbums(assignments);
   }
+  
+  async getAlbumWithStats(albumId: number): Promise<any | null> {
+    return await this.albumService.getAlbumWithStats(albumId);
+  }
 
   async searchAlbum(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

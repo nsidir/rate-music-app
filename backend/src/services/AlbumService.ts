@@ -3,7 +3,7 @@ import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { Album, CreateAlbum, UserAlbumAssignment } from "../types";
 import { albumsTable, artistsTable, usersToAlbumsTable } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, avg, count, sql } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import { searchAlbumCover, searchAlbumsByKeyword } from './MusicBrainzService';
 
@@ -48,6 +48,42 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
 
   async assignAlbums(assignments: UserAlbumAssignment[]): Promise<void> {
     await this.dbService.getDb().insert(usersToAlbumsTable).values(assignments);
+  }
+
+  async getAlbumWithStats(albumId: number): Promise<any | null> {
+  // First, get the album's core details and artist name
+  const [albumDetails] = await this.dbService.getDb().select({
+      album_id: albumsTable.album_id,
+      album_name: albumsTable.album_name,
+      artist_id: albumsTable.artist_id,
+      cover_url: albumsTable.cover_url,
+      artist_name: artistsTable.artist_name,
+    })
+    .from(albumsTable)
+    .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
+    .where(eq(albumsTable.album_id, albumId));
+
+  if (!albumDetails) {
+    return null;
+  }
+
+  // Then, calculate the aggregate stats for that album
+  const [albumStats] = await this.dbService.getDb()
+    .select({
+      // Calculate the average of non-null ratings
+      avgRating: avg(usersToAlbumsTable.rating),
+      // Count rows where 'favorite' is true
+      favoriteCount: count(sql`CASE WHEN ${usersToAlbumsTable.favorite} = true THEN 1 END`),
+    })
+    .from(usersToAlbumsTable)
+    .where(eq(usersToAlbumsTable.album_id, albumId));
+
+  // Combine the results
+  return {
+    ...albumDetails,
+    avgRating: albumStats.avgRating ? parseFloat(albumStats.avgRating).toFixed(2) : null,
+    favoriteCount: Number(albumStats.favoriteCount) || 0,
+  };
   }
 
   async findAlbumByNameAndArtist(albumName: string, artistName: string): Promise<Album | null> {

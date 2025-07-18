@@ -58,6 +58,21 @@ app.get('/api/albums', (req, res, next) => {
     .catch(next);
 });
 
+// Album details with stats
+app.get('/api/albums/:id', (req, res, next) => {
+  const albumId = parseInt(req.params.id, 10);
+  albumController
+    .getAlbumWithStats(albumId)
+    .then((album) => {
+      if (album) {
+        res.json(album);
+      } else {
+        res.status(404).json({ error: 'Album not found' });
+      }
+    })
+    .catch(next);
+});
+
 // Add album to favorites
 app.post('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
   try {
