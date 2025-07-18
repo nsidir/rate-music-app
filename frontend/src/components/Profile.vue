@@ -21,11 +21,13 @@
         <h3>Favorite Albums</h3>
         <div class="album-grid">
           <div v-for="fav in profile.favorites" :key="fav.album_id" class="album-card">
-            <img :src="fav.cover_url" :alt="fav.album_name" />
-            <div class="album-info">
-              <h4>{{ fav.album_name }}</h4>
-              <p>{{ fav.artist_name }}</p>
-            </div>
+            <router-link :to="`/album/${fav.album_id}`" class="card-link">
+              <img :src="fav.cover_url" :alt="fav.album_name" />
+              <div class="album-info">
+                <h4>{{ fav.album_name }}</h4>
+                <p>{{ fav.artist_name }}</p>
+              </div>
+            </router-link>
           </div>
         </div>
       </section>
@@ -37,13 +39,15 @@
         <h3>Rated Albums</h3>
         <div class="album-grid">
           <div v-for="rating in profile.ratings" :key="rating.album_id" class="album-card">
+            <router-link :to="`/album/${rating.album_id}`" class="card-link">
             <img :src="rating.cover_url" :alt="rating.album_name" />
             <div class="album-info">
               <h4>{{ rating.album_name }}</h4>
               <p>{{ rating.artist_name }}</p>
               <p class="rating">Rating: {{ rating.rating }} / 5</p>
             </div>
-          </div>
+            </router-link>
+            </div>
         </div>
       </section>
       <div v-else class="empty-state">No rated albums yet.</div>
@@ -191,6 +195,7 @@ onMounted(async () => {
   border-radius: 8px;
   overflow: hidden;
   text-align: center;
+  text-decoration: none;
   transition: transform 0.2s;
 }
 
@@ -202,6 +207,12 @@ onMounted(async () => {
   width: 100%;
   height: 150px;
   object-fit: cover;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .album-info {

@@ -17,7 +17,8 @@
     "typescript",
     "postgres",
     "drizzle",
-    "tsyringe"
+    "tsyringe",
+    "vitest"
   ],
   "author": "Nikos Sidiropoulos, Dennis Hritcu",
   "license": "ISC",
