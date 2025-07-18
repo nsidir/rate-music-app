@@ -17,7 +17,7 @@ export class AuthMiddleware {
     }
     
     const token = authHeader.split(' ')[1];
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.VITE_JWT_SECRET;
     
     if (!jwtSecret) {
       console.error('JWT_SECRET is not set in the environment variables.');

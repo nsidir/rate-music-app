@@ -60,6 +60,15 @@ export class UserController {
     await this.userService.addRating(userId, albumId, rating);
   }
 
+  async removeFavorite(userId: number, albumId: number): Promise<void> {
+    await this.userService.removeFavorite(userId, albumId);
+  }
+
+  async getAlbumUserData(userId: number, albumId: number): Promise<{ rating: number | null, favorite: boolean } | null> {
+    return await this.userService.getAlbumUserData(userId, albumId);
+  }
+
+
   async getUserRatings(userId: number): Promise<User[]> {
     return await this.userService.getUserRatings(userId);
   }

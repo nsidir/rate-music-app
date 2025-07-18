@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
 import { container } from 'tsyringe';
 import { UserController } from './controllers/UserController';
 import { AlbumController } from './controllers/AlbumController';
@@ -13,6 +14,8 @@ import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
 import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddleware';
 
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
 container.register(UserService, { useClass: UserService });
@@ -20,7 +23,7 @@ container.register(AlbumService, { useClass: AlbumService });
 container.register(ArtistService, { useClass: ArtistService });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.VITE_PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -60,6 +63,43 @@ app.post('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req
   } catch (error) {
     next(error);
   }
+});
+
+// Remove album from favorites
+app.delete('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const albumId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+    const result = await userController.removeFavorite(userId, albumId);
+    res.json({ message: `Album with id:${albumId} removed from favorites of user with id:${userId} `, result });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add/update album rating
+app.post('/api/albums/:id/ratings', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
+    try {
+        const albumId = parseInt(req.params.id, 10);
+        const userId = req.user.id;
+        const { rating } = req.body;
+        const result = await userController.addRating(userId, albumId, rating);
+        res.json({ message: `Rating for album with id:${albumId} updated for user with id:${userId} `, result });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Get user-specific album data (rating and favorite status)
+app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
+    try {
+        const albumId = parseInt(req.params.albumId, 10);
+        const userId = req.user.id;
+        const result = await userController.getAlbumUserData(userId, albumId);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
 });
 
 //Get a user's profile info (favorites and ratings)

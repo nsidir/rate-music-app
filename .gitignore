@@ -29,6 +29,7 @@ yarn-error.log*
 /frontend/node_modules
 /frontend/.vscode
 /frontend/.env
+/frontend/dist
 
 # backend
 /backend/node_modules

@@ -17,14 +17,24 @@
   </template>
   
   <script lang="ts">
-  import { defineComponent, ref } from 'vue';
+  import { defineComponent, ref, watch } from 'vue';
   
   export default defineComponent({
     name: 'StarRating',
     emits: ['rating-selected'],
-    setup(_, { emit }) {
+    props: {
+        initialRating: {
+            type: Number,
+            default: 0
+        }
+    },
+    setup(props, { emit }) {
       const hoveredRating = ref(0);
-      const clickedRating = ref(0);
+      const clickedRating = ref(props.initialRating);
+
+      watch(() => props.initialRating, (newVal) => {
+          clickedRating.value = newVal;
+      });
   
       const hoverRating = (rating: number) => {
         hoveredRating.value = rating;

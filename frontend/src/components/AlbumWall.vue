@@ -2,15 +2,14 @@
 <template>
   <div class="album-wall">
     <transition-group name="fade" tag="div">
-      <div class="card" v-for="album in filteredAlbums" :key="album.id">
-        <router-link :to="`/album/${album.id}`" class="card-link">
+      <div class="card" v-for="album in filteredAlbums" :key="album.album_id">
+        <router-link :to="`/album/${album.album_id}`" class="card-link">
           <div class="card-image">
-            <!-- Use albumCovers from AlbumCovers.ts if available, otherwise fallback to album.cover -->
-            <img :src="albumCovers[album.title] || album.cover" :alt="album.title" />
+            <img :src="album.cover_url" :alt="album.album_name" />
           </div>
           <div class="card-info">
-            <h3>{{ album.title }}</h3>
-            <p>{{ album.artist }}</p>
+            <h3>{{ album.album_name }}</h3>
+            <p>{{ album.artist_name }}</p>
           </div>
         </router-link>
       </div>
@@ -19,26 +18,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import albumsData from '../assets/albums.json'
-import { albumCovers } from '../AlbumCovers'
+import { ref, computed, onMounted } from 'vue'
 
-// Define the Album interface.
+// Define the Album interface to match the API response.
 interface Album {
-  id: string
-  title: string
-  artist: string
-  cover?: string
-  year: number
-  genre: string
-  description: string
+  album_id: number
+  album_name: string
+  artist_name: string
+  cover_url: string
 }
 
 // Accept the search query as a prop.
 const props = defineProps<{ searchQuery: string }>()
 
-// Create a reactive reference with the album data.
-const albums = ref<Album[]>(albumsData)
+// Create a reactive reference for the album data.
+const albums = ref<Album[]>([])
+
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/albums')
+    if (response.ok) {
+      albums.value = await response.json()
+    }
+  } catch (error) {
+    console.error('Error fetching albums:', error)
+  }
+})
 
 // Compute the filtered albums based on the search query.
 const filteredAlbums = computed(() => {
@@ -46,8 +51,8 @@ const filteredAlbums = computed(() => {
   const query = props.searchQuery.toLowerCase()
   return albums.value.filter(
     album =>
-      album.title.toLowerCase().includes(query) ||
-      album.artist.toLowerCase().includes(query)
+      album.album_name.toLowerCase().includes(query) ||
+      album.artist_name.toLowerCase().includes(query)
   )
 })
 </script>

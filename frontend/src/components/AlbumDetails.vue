@@ -2,29 +2,25 @@
   <div>
     <HeaderBar v-model:modelValue="searchQuery" />
     <div class="album-details" v-if="album">
-      <img :src="albumCovers[album.title] || album.cover" :alt="album.title" class="album-cover" />
-      <h1>{{ album.title }}</h1>
-      <h2>{{ album.artist }}</h2>
-      <p><strong>Year:</strong> {{ album.year }}</p>
-      <p><strong>Genre:</strong> {{ album.genre }}</p>
+      <img :src="album.cover_url" :alt="album.album_name" class="album-cover" />
+      <h1>{{ album.album_name }}</h1>
+      <h2>{{ album.artist_name }}</h2>
       <div class="user-actions">
         <template v-if="userStore.loggedIn">
-          <StarRating @rating-selected="handleRating" />
+          <StarRating :initialRating="rating" @rating-selected="handleRating" />
           <FavoriteIcon :isActive="isFavorite" @toggle="toggleFavorite" />
         </template>
       </div>
     </div>
     <div v-else class="not-found">
-      <p>Album not found.</p>
+      <p>Loading album or album not found.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onBeforeUnmount } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import albumsData from '../assets/albums.json'
-import { albumCovers } from '../AlbumCovers'
 import StarRating from './StarRating.vue'
 import FavoriteIcon from './FavoriteIcon.vue'
 import { useUserStore } from '../stores/user'
@@ -32,84 +28,93 @@ import HeaderBar from './HeaderBar.vue'
 
 const searchQuery = ref('')
 
+// Updated Album interface to match API
 interface Album {
-  id: string
-  title: string
-  artist: string
-  cover?: string
-  year: number
-  genre: string
+  album_id: number
+  album_name: string
+  artist_name: string
+  cover_url: string
 }
 
 const userStore = useUserStore()
-const albums = albumsData as Album[]
 const route = useRoute()
-const album = computed(() => albums.find(a => a.id === route.params.id))
+const album = ref<Album | null>(null)
 
 // Reactive state for rating and favorite
-const rating = ref<number>(0)  // 0 means "no rating"
+const rating = ref<number>(0)
 const isFavorite = ref(false)
 
-// Custom debounce updater
-function createDebouncedUpdater(fn: () => void, delay: number) {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null
-
-  const updater = () => {
-    if (timeoutId) clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => {
-      fn()
-      timeoutId = null
-    }, delay)
-  }
-
-  updater.flush = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-      fn()
-      timeoutId = null
+onMounted(async () => {
+  try {
+    const albumsResponse = await fetch('/api/albums')
+    if (!albumsResponse.ok) {
+        throw new Error('Failed to fetch albums');
     }
+    const allAlbums: Album[] = await albumsResponse.json()
+    
+    const currentAlbum = allAlbums.find(a => a.album_id === Number(route.params.id))
+    if (!currentAlbum) {
+        console.error('Album not found');
+        return;
+    }
+    album.value = currentAlbum;
+
+    if (userStore.loggedIn) {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const statusResponse = await fetch(`/api/user/albums/${album.value.album_id}/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (statusResponse.ok) {
+        const data = await statusResponse.json();
+        if (data) {
+          rating.value = data.rating || 0;
+          isFavorite.value = data.favorite || false;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in onMounted:', error)
   }
+})
 
-  return updater
+// Update rating in the database
+const updateRating = async () => {
+    if (!album.value) return;
+    console.log("Rating updated:", rating.value)
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    await fetch(`/api/albums/${album.value.album_id}/ratings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ rating: rating.value })
+    });
 }
 
-// Updater that reads the final rating state.
-const updateRating = () => {
-  if (rating.value === 0) {
-    console.log("Final rating cleared (no rating).")
-  } else {
-    console.log("Final rating updated:", rating.value)
-  }
+// Update favorite status in the database
+const updateFavorite = async () => {
+  if (!album.value) return;
+  console.log("Favorite toggled:", isFavorite.value)
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const method = isFavorite.value ? 'POST' : 'DELETE';
+  await fetch(`/api/albums/${album.value.album_id}/favorites`, {
+    method: method,
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
 }
 
-// Updater for favorite state.
-const updateFavorite = () => {
-  console.log("Final favorite toggled:", isFavorite.value)
-}
-
-// Create debounced updaters with a 1-second delay.
-const debouncedUpdateRating = createDebouncedUpdater(updateRating, 1000)
-const debouncedUpdateFavorite = createDebouncedUpdater(updateFavorite, 1000)
-
-// Handler for rating events from StarRating.
+// Handler for rating events from StarRating
 const handleRating = (selectedRating: number) => {
   rating.value = selectedRating
-  console.log("Rating received:", selectedRating)
-  debouncedUpdateRating()
+  updateRating()
 }
 
-// Handler for toggling favorite.
+// Handler for toggling favorite
 const toggleFavorite = () => {
   isFavorite.value = !isFavorite.value
-  console.log("Favorite toggled:", isFavorite.value)
-  debouncedUpdateFavorite()
+  updateFavorite()
 }
-
-// Flush any pending debounced calls on component unmount.
-onBeforeUnmount(() => {
-  debouncedUpdateRating.flush()
-  debouncedUpdateFavorite.flush()
-})
 </script>
 
 <style scoped>

@@ -12,13 +12,13 @@ export class DatabaseService {
   private client: postgres.Sql;
 
   constructor() {
-    if (!process.env.DATABASE_URL) {
+    if (!process.env.VITE_DATABASE_URL) {
       throw new Error('DATABASE_URL is not set in the environment variables');
     }
 
     console.log('Initializing database connection...');
 
-    this.client = postgres(process.env.DATABASE_URL, { 
+    this.client = postgres(process.env.VITE_DATABASE_URL, { 
       prepare: false,
     });
 

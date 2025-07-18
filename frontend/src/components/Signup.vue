@@ -99,11 +99,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/user'
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const userStore = useUserStore()
 const router = useRouter()
 
 // Form state – using single username field

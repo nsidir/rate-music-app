@@ -83,6 +83,52 @@ export class UserService implements IEntityService<User, CreateUser> {
       .execute();
   }
 
+  // Add album rating for user using an upsert
+  async addRating(userId: number, albumId: number, rating: number): Promise<void> {
+    await this.dbService.getDb()
+      .insert(usersToAlbumsTable)
+      .values({
+        user_id: userId,
+        album_id: albumId,
+        rating: rating,
+      })
+      .onConflictDoUpdate({
+        target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
+        set: { rating: rating },
+      });
+  }
+
+  // Remove album from user's favorites
+  async removeFavorite(userId: number, albumId: number): Promise<void> {
+    await this.dbService.getDb()
+      .insert(usersToAlbumsTable)
+      .values({
+          user_id: userId,
+          album_id: albumId,
+          favorite: false,
+      })
+      .onConflictDoUpdate({
+          target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
+          set: { favorite: false },
+      });
+  }
+
+  // Get user-specific data for an album
+  async getAlbumUserData(userId: number, albumId: number): Promise<{ rating: number | null, favorite: boolean } | null> {
+      const [data] = await this.dbService.getDb()
+          .select({
+              rating: usersToAlbumsTable.rating,
+              favorite: usersToAlbumsTable.favorite,
+          })
+          .from(usersToAlbumsTable)
+          .where(and(
+              eq(usersToAlbumsTable.user_id, userId),
+              eq(usersToAlbumsTable.album_id, albumId)
+          ));
+
+      return data ? { rating: data.rating, favorite: data.favorite } : null;
+  }
+
   // Fetch only favorite albums (where favorite is true) for the given user.
   async getUserFavorites(userId: number): Promise<any[]> {
     return await this.dbService.getDb()
@@ -117,15 +163,5 @@ export class UserService implements IEntityService<User, CreateUser> {
         target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
         set: { favorite: true },
       });
-  }
-
-  // Add album rating for user
-  async addRating(userId: number, albumId: number, rating: number): Promise<void> {
-    await this.dbService.getDb().update(usersToAlbumsTable).set({ rating }).where(
-      and(
-        eq(usersToAlbumsTable.user_id, userId),
-        eq(usersToAlbumsTable.album_id, albumId)
-      )
-    );
   }
 }

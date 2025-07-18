@@ -49,8 +49,8 @@ export class AuthController {
       // Generate JWT token
       const token = jwt.sign(
         { id: user.user_id, username: user.username },
-        process.env.JWT_SECRET || 'supersecretkey',
-        { expiresIn: '1h' }
+        process.env.VITE_JWT_SECRET || 'supersecretkey',
+        { expiresIn: '24h' }
       );
 
       return res.status(200).json({ 
