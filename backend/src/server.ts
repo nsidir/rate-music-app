@@ -3,6 +3,13 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import { container } from 'tsyringe';
 import { UserController } from './controllers/UserController';
 import { AlbumController } from './controllers/AlbumController';
@@ -13,8 +20,6 @@ import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
 import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddleware';
-
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);

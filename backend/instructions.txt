@@ -1,3 +1,5 @@
 run schema: npx drizzle-kit push
 
 seed: npx tsx db/seed.ts
+
+test: npm test

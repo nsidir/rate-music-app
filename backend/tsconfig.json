@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-      "target": "ES6",                           // Target ECMAScript version (ES6 or higher)
-      "module": "commonjs",                      // Module system (could also be ESNext)
-      "lib": ["ES6", "DOM"],                     // Include built-in libraries
+      "target": "ES2020",                           // Target ECMAScript version (ES6 or higher)
+      "module": "ES2020",                        // Module system
+      "lib": ["ES2020", "DOM"],                     // Include built-in libraries
       "strict": true,                            // Enable all strict type checking options
       "esModuleInterop": true,                   // Enable interoperability between CommonJS and ES Modules
       "skipLibCheck": true,                      // Skip type checking of all declaration files
