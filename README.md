@@ -19,3 +19,11 @@ npm run frontend  #Frontend only
 npm run backend   #Backend only
 npm run dev       #Both
 ```
+
+## Testing
+
+Backend tests:
+
+```bash
+npm run test      #Backend integration tests
+```

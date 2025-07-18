@@ -5,7 +5,8 @@
   "scripts": {
     "frontend": "cd frontend && npm run dev",
     "backend": "cd backend && npx tsx src/server.ts",
-    "dev": "concurrently -n FRONTEND,BACKEND -c \"bgBlue.bold,bgMagenta.bold\" \"npm run frontend\" \"npm run backend\""
+    "dev": "concurrently -n FRONTEND,BACKEND -c \"bgBlue.bold,bgMagenta.bold\" \"npm run frontend\" \"npm run backend\"",
+    "test": "cd backend && npm test"
   },
   "keywords": [
     "music",
