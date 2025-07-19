@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'backend/**' # Only run on changes in the backend folder
+      - 'backend/**'
   workflow_dispatch:
 
 jobs:
@@ -29,6 +29,8 @@ jobs:
           node-version: '22.x'
 
       - name: Install dependencies and run tests in backend
+        env:
+          VITE_DATABASE_URL: ${{ secrets.VITE_DATABASE_URL_TEST }}
         run: |
           cd backend
           npm install
