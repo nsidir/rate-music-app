@@ -28,9 +28,14 @@ jobs:
         with:
           node-version: '22.x'
 
+      - name: Create .env file for backend
+        run: |
+          echo "Creating .env file in the backend directory..."
+          echo "VITE_DATABASE_URL=${{ secrets.VITE_DATABASE_URL }}" >> backend/.env
+          echo "Contents of backend/.env:"
+          cat backend/.env
+
       - name: Install dependencies and run tests in backend
-        env:
-          VITE_DATABASE_URL: ${{ secrets.VITE_DATABASE_URL }}
         run: |
           cd backend
           npm install
