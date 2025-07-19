@@ -13,7 +13,7 @@ export const usersTable = pgTable("users", {
 // Artists table
 export const artistsTable = pgTable("artists", {
   artist_id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  artist_name: varchar({ length: 255 }).notNull(),
+  artist_name: varchar({ length: 255 }).notNull().unique(),
 });
 
 // Albums table

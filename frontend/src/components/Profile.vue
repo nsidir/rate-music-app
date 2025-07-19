@@ -38,16 +38,19 @@
       <section class="ratings" v-if="profile.ratings && profile.ratings.length">
         <h3>Rated Albums</h3>
         <div class="album-grid">
-          <div v-for="rating in profile.ratings" :key="rating.album_id" class="album-card">
+          <!-- if rating is null don't show the album -->
+          <div v-for="rating in profile.ratings.filter(r => r.rating !== null)"
+               :key="rating.album_id"
+               class="album-card">
             <router-link :to="`/album/${rating.album_id}`" class="card-link">
-            <img :src="rating.cover_url" :alt="rating.album_name" />
-            <div class="album-info">
-              <h4>{{ rating.album_name }}</h4>
-              <p>{{ rating.artist_name }}</p>
-              <p class="rating">Rating: {{ rating.rating }} / 5</p>
-            </div>
+              <img :src="rating.cover_url" :alt="rating.album_name" />
+              <div class="album-info">
+                <h4>{{ rating.album_name }}</h4>
+                <p>{{ rating.artist_name }}</p>
+                <p class="rating">Rating: {{ rating.rating }} / 5</p>
+              </div>
             </router-link>
-            </div>
+          </div>
         </div>
       </section>
       <div v-else class="empty-state">No rated albums yet.</div>

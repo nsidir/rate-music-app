@@ -5,13 +5,13 @@
           class="star"
           v-for="n in 5"
           :key="n"
-          :class="{ 'hovered': n <= hoveredRating || n <= clickedRating }"
+          :class="{ 'hovered': (hoveredRating !== null && n <= hoveredRating) || (clickedRating !== null && n <= clickedRating) }"
           @mouseover="hoverRating(n)"
           @click.stop="clickRating(n)"
         ></div>
       </div>
       <div class="rating_display">
-        {{ clickedRating > 0 ? clickedRating : '-' }} / 5
+        {{ (clickedRating ?? 0) > 0 ? clickedRating : '-' }} / 5
       </div>
     </div>
   </template>
@@ -25,36 +25,36 @@
     props: {
         initialRating: {
             type: Number,
-            default: 0
+            default: null,
         }
     },
     setup(props, { emit }) {
-      const hoveredRating = ref(0);
-      const clickedRating = ref(props.initialRating);
+      const hoveredRating = ref<number | null>(null);
+      const clickedRating = ref<number | null>(props.initialRating);
 
       watch(() => props.initialRating, (newVal) => {
           clickedRating.value = newVal;
       });
   
-      const hoverRating = (rating: number) => {
+      const hoverRating = (rating: number | null) => {
         hoveredRating.value = rating;
       };
-  
-      const clickRating = (rating: number) => {
+
+      const clickRating = (rating: number | null) => {
         clickedRating.value = rating;
         emit('rating-selected', clickedRating.value);
       };
   
       const resetHoveredRating = () => {
-        hoveredRating.value = 0;
+        hoveredRating.value = null;
       };
   
       const handleStarsClick = (event: MouseEvent) => {
         // If the user clicks on the container (not on a star), clear the rating.
         if (event.target === event.currentTarget) {
-          clickedRating.value = 0;
-          hoveredRating.value = 0;
-          emit('rating-selected', 0); // Emit clear rating event
+          clickedRating.value = null;
+          hoveredRating.value = null;
+          emit('rating-selected', null); // Emit clear rating event
         }
       };
   
