@@ -15,7 +15,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
-    # Grant permissions for JWT token request for Azure login
     permissions:
       id-token: write
       contents: read
@@ -48,4 +47,4 @@ jobs:
         with:
           app-name: 'rate-music-app'
           slot-name: 'Production'
-          package: './backend' # Specifies that only the backend folder should be deployed
+          package: './backend'
