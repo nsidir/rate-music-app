@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies and run tests in backend
         env:
-          VITE_DATABASE_URL: ${{ secrets.VITE_DATABASE_URL_TEST }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd backend
           npm install
