@@ -101,7 +101,7 @@ onMounted(async () => {
   // Retrieve JWT token
   const token = localStorage.getItem('token') || sessionStorage.getItem('token')
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+    const apiUrl = import.meta.env.VITE_API_URL
     const response = await fetch(`${apiUrl}/user/profile/${userId}`, {
       headers: {
         'Content-Type': 'application/json',

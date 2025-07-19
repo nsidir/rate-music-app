@@ -38,6 +38,7 @@ export const usersToAlbumsTable = pgTable(
       .references(() => albumsTable.album_id, { onDelete: "cascade" }),
     rating: integer("rating"),
     favorite: boolean("favorite").notNull().default(false),
+    review: varchar({ length: 2000 }).default(''),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.user_id, table.album_id] }),
