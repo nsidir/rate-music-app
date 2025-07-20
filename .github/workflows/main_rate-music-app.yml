@@ -21,7 +21,7 @@ jobs:
       - name: SSH into Azure VM and deploy
         run: |
           ssh -tt ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
-            cd ~/your-app-folder  # 👈 change this to your actual app folder
+            cd ~/rate-music-app
 
             # Create .env file at root
             cat > .env <<EOL
@@ -40,6 +40,11 @@ jobs:
 
             # Install dependencies
             npm install
+
+            cd frontend && npm install
+            cd ..
+            cd backend && npm install
+            cd ..
 
             # Run tests
             npm run test
