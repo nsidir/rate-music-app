@@ -18,12 +18,10 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      - name: SSH into Azure VM and deploy
+      - name: Create .env file
         run: |
           ssh -tt -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
             cd ~/rate-music-app
-
-            # Create .env file at root
             cat > .env << EOL
             # Backend Variables
             VITE_DATABASE_URL=${{ secrets.VITE_DATABASE_URL }}
@@ -33,24 +31,32 @@ jobs:
             # Frontend Variables
             VITE_API_URL=http://localhost:4960/api
             EOL
+          EOF
 
-            # Pull latest code
-            git pull origin main
+      - name: Pull latest code
+        run: |
+          ssh -tt -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} 'cd ~/rate-music-app && git pull origin main'
 
-            # Install dependencies
+      - name: Install dependencies
+        run: |
+          ssh -tt -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+            cd ~/rate-music-app
             npm install
+            cd frontend && npm install
+            cd ../backend && npm install
+          EOF
 
-            cd frontend && npm install && cd ..
-            cd backend && npm install && cd ..
+      - name: Run tests
+        run: |
+          ssh -tt -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} 'cd ~/rate-music-app && npm run test'
 
-            # Run tests
-            npm run test
-
-            # Stop existing processes
+      - name: Restart application
+        run: |
+          ssh -tt -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+            cd ~/rate-music-app
             pkill -f "npm run dev" || true
             pkill -f "node.*rate-music-app" || true
-
-            # Start app with PM2 (recommended) or nohup
+            
             if command -v pm2 &> /dev/null; then
               pm2 stop rate-music-app || true
               pm2 start npm --name "rate-music-app" -- run dev
@@ -58,11 +64,11 @@ jobs:
             else
               nohup npm run dev > app.log 2>&1 &
             fi
-
+            
             echo "Deployment completed successfully"
           EOF
 
-      - name: Cleanup SSH
+      - name: Cleanup SSH Key
         if: always()
         run: |
           rm -f ~/.ssh/deploy_key
