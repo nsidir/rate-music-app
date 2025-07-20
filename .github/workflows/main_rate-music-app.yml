@@ -1,55 +1,49 @@
-name: Build and deploy Node.js app to Azure Web App - rate-music-app-backend
+name: Deploy on Push to Main
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'backend/**'
-  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment: Production
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
-
-      - name: Create .env file
+      - name: Set up SSH
         run: |
-          touch .env
-          echo "VITE_DATABASE_URL=${{ secrets.VITE_DATABASE_URL }}" >> backend/.env
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> backend/.env
-          echo "Contents of backend/.env:"
-          cat backend/.env
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Install dependencies and run tests in backend
+      - name: SSH into Azure VM and deploy
         run: |
-          cd backend
-          npm install
-        
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.CLIENT_ID }}
-          tenant-id: ${{ secrets.TENANT_ID }}
-          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+            cd ~/your-app-folder  # 👈 change this to your actual app folder
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'rate-music-app'
-          slot-name: 'Production'
-          package: './backend'
+            # Create .env file at root
+            cat > .env <<EOL
+            # Backend Variables
+            VITE_DATABASE_URL=postgresql://postgres.tqpoprazhxkebxnwtuve:c7Law7gQ7NS*ENf@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+            VITE_PORT=4960
+            VITE_JWT_SECRET='supersecret'
+
+            # Frontend Variables
+            VITE_API_URL=http://localhost:4960/api
+            EOL
+
+            # Pull latest code
+            git pull origin main
+
+            # Install dependencies
+            npm install
+
+            # Run tests
+            npm run test
+
+            # Start app (use something like pm2 or tmux to keep it alive)
+            pkill node || true  # kill previous dev if running
+            nohup npm run dev > app.log 2>&1 &
+          EOF
