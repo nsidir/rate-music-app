@@ -15,7 +15,7 @@ export default ({ mode }: { mode: string }) => {
     server: {
       proxy: {
         '/api': {
-          target: `http://localhost:${process.env.VITE_PORT}`,
+          target: `http://${process.env.VITE_API_IP}:${process.env.VITE_PORT}`,
           changeOrigin: true,
         },
       },
