@@ -1,18 +1,17 @@
-name: Deploy on Push to Main
+name: Delete Deployments
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  cleanup:
+  delete-deployments:
     runs-on: ubuntu-latest
-    environment: Production
-    permissions: write-all
+    permissions:
+      deployments: write
+      contents: read
 
     steps:
-      - name: 🗑 Delete deployment
+      - name: Delete all deployments in 'Production'
         uses: strumwolf/delete-deployment-environment@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
