@@ -18,7 +18,7 @@ interface AuroraProps {
 }
 
 const props = withDefaults(defineProps<AuroraProps>(), {
-  colorStops: () => ['#007bff', '#171D22', '#007bff'], // Blue background
+  colorStops: () => ['#0a7fdc', '#068566', '#007bff'],
   amplitude: 1.0,
   blend: 0.5,
   speed: 1.0,
