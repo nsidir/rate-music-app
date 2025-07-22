@@ -1,7 +1,9 @@
 name: Deploy Azure VM - Rate Music App
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:

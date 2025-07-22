@@ -236,7 +236,7 @@ const handleLogin = async () => {
 
 .toggle-password {
   position: absolute;
-  right: 15px;
+  right: 30px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
