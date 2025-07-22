@@ -1,19 +1,22 @@
-name: Delete Deployments
+name: Deploy Azure VM - Rate Music App
 
 on:
   workflow_dispatch:
 
 jobs:
-  delete-deployments:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      deployments: write
-      contents: read
-
+    environment: Production
     steps:
-      - name: Delete all deployments in 'Production'
-        uses: strumwolf/delete-deployment-environment@v2
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Connect via SSH and pull latest code
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: Production
-          onlyRemoveDeployments: true
+          host: 72.145.8.73
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd rate-music-app
+            git pull origin main
