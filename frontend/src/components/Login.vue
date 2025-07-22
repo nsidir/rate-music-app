@@ -147,7 +147,7 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background-color: #0a1527;
+  background-color: transparent;
   color: #fff;
 }
 

@@ -66,10 +66,11 @@ const filteredAlbums = computed(() => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  align-items: center;
 }
 
 .card {
-  flex: 1 1 200px;
+  flex: 0 1 200px;
   max-width: 200px;
   position: relative;
   overflow: hidden;
@@ -90,7 +91,6 @@ const filteredAlbums = computed(() => {
 
 .card-image {
   width: 100%;
-  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
