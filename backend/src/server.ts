@@ -36,14 +36,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: i.scdn.co m.media-amazon.com portalpopline.com.br e.snmc.io; font-src 'self';"
-  );
-  next();
-});
-
 // Controllers
 const userController = container.resolve(UserController);
 const albumController = container.resolve(AlbumController);
