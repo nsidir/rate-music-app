@@ -1,3 +1,4 @@
+<!-- src/components/AlbumDetails.vue -->
 <template>
   <div>
     <HeaderBar v-model:modelValue="searchQuery" />
@@ -30,6 +31,42 @@
           </p>
         </div>
       </div>
+
+      <!-- Reviews Section -->
+      <div class="reviews-section">
+        <h3>User Reviews</h3>
+
+        <!-- Review Form -->
+        <div v-if="userStore.loggedIn" class="review-form">
+          <textarea
+            v-model="newReview"
+            placeholder="Write your review here..."
+            rows="4"
+            cols="50"
+          ></textarea>
+          <button @click="submitReview" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
+          </button>
+          <p v-if="reviewError" class="error-message">{{ reviewError }}</p>
+        </div>
+        <p v-else class="login-prompt">
+          <router-link to="/login">Log in</router-link> to write a review.
+        </p>
+
+        <!-- Reviews List -->
+        <div class="reviews-list">
+          <div v-if="reviews.length === 0" class="no-reviews">
+            <p>No reviews yet. Be the first to review this album!</p>
+          </div>
+          <div v-for="review in reviews" :key="review.review_id" class="review">
+            <div class="review-header">
+              <strong>{{ review.username }}</strong>
+              <small>{{ formatDate(review.created_at) }}</small>
+            </div>
+            <p class="review-text">{{ review.comment }}</p>
+          </div>
+        </div>
+      </div>
     </div>
     <div v-else class="not-found">
       <p>Loading album or album not found.</p>
@@ -56,9 +93,20 @@ interface Album {
   favoriteCount: number | null;
 }
 
+interface Review {
+  review_id: number;
+  username: string;
+  comment: string;
+  created_at: string;
+}
+
 const userStore = useUserStore();
 const route = useRoute();
 const album = ref<Album | null>(null);
+const reviews = ref<Review[]>([]);
+const newReview = ref('');
+const isSubmitting = ref(false);
+const reviewError = ref('');
 
 const userRating = ref<number>(0); 
 const isFavorite = ref(false);
@@ -79,9 +127,34 @@ async function fetchAlbumData() {
   }
 }
 
+// Fetch reviews
+async function fetchReviews() {
+  try {
+    const albumId = Number(route.params.id);
+    const response = await fetch(`/api/albums/${albumId}/reviews`);
+    if (response.ok) {
+      reviews.value = await response.json();
+    } else {
+      console.error('Failed to fetch reviews');
+    }
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+  }
+}
+
+// Format date for display
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
 onMounted(async () => {
   // Cleaned up onMounted logic
   await fetchAlbumData();
+  await fetchReviews();
 
   // If user is logged in, fetch their specific rating and favorite status
   if (userStore.loggedIn && album.value) {
@@ -95,6 +168,10 @@ onMounted(async () => {
         if (data) {
           userRating.value = data.rating || 0;
           isFavorite.value = data.favorite || false;
+          // Pre-fill review if user has one
+          if (data.review) {
+            newReview.value = data.review;
+          }
         }
       }
     } catch (error) {
@@ -102,6 +179,44 @@ onMounted(async () => {
     }
   }
 });
+
+// Submit a new review
+const submitReview = async () => {
+  if (!newReview.value.trim()) {
+    reviewError.value = 'Review cannot be empty';
+    return;
+  }
+
+  if (!album.value) return;
+
+  isSubmitting.value = true;
+  reviewError.value = '';
+
+  try {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const response = await fetch(`/api/albums/${album.value.album_id}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ comment: newReview.value.trim() })
+    });
+
+    if (response.ok) {
+      newReview.value = '';
+      await fetchReviews(); // Refresh reviews list
+    } else {
+      const errorData = await response.json();
+      reviewError.value = errorData.error || 'Failed to submit review';
+    }
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    reviewError.value = 'Network error. Please try again.';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
 
 // Update rating in the database
 const updateRating = async () => {
@@ -217,7 +332,7 @@ const toggleFavorite = () => {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-top: auto; /* Pushes actions to the bottom */
+  margin-top: auto;
 }
 
 .login-prompt {
@@ -229,6 +344,94 @@ const toggleFavorite = () => {
   color: #606ff2;
   font-weight: bold;
   text-decoration: none;
+}
+
+/* Reviews Section Styles */
+.reviews-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+}
+
+.reviews-section h3 {
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.review-form {
+  margin-bottom: 30px;
+}
+
+.review-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: #0a1527;
+  color: aliceblue;
+  border: 1px solid #333;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.review-form button {
+  background-color: #606ff2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.review-form button:hover:not(:disabled) {
+  background-color: #4b57c5;
+}
+
+.review-form button:disabled {
+  background-color: #4a56b0;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.reviews-list .review {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #0a1527;
+  border-radius: 8px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.review-header strong {
+  color: #606ff2;
+}
+
+.review-header small {
+  color: #a8aeba;
+  font-size: 0.85em;
+}
+
+.review-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #a8aeba;
+  font-style: italic;
+  padding: 20px;
 }
 
 .not-found {
@@ -245,10 +448,20 @@ const toggleFavorite = () => {
   }
   .text-info {
     align-items: center;
-    text-align: center;
+  }
+  .album-cover {
+    width: 200px;
+    height: 200px;
+  }
+  .community-stats {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
   }
   .user-actions {
-    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
   }
 }
 </style>

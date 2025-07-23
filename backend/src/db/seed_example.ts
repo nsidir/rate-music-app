@@ -1,5 +1,8 @@
 import 'dotenv/config';
 import "reflect-metadata";
+import dotenv from 'dotenv';
+import path from 'path';
+
 import { container } from "tsyringe";
 import { UserController } from "../controllers/UserController";
 import { AlbumController } from "../controllers/AlbumController";
@@ -9,6 +12,13 @@ import { UserService } from "../services/UserService";
 import { AlbumService } from "../services/AlbumService";
 import { ArtistService } from "../services/ArtistService";
 import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment } from "../types";
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 // Register services
 container.registerSingleton(DatabaseService);
@@ -98,11 +108,12 @@ async function assignAlbums(
             throw new Error('Required records not found for album assignments');
         }
 
+        const now = new Date();
         const assignments: UserAlbumAssignment[] = [
-            { user_id: johnDoe.user_id, album_id: abbeyRoad.album_id, rating: 5, favorite: true },
-            { user_id: johnDoe.user_id, album_id: stickyFingers.album_id, rating: 4, favorite: true },
-            { user_id: johnDoe.user_id, album_id: laWoman.album_id, rating: 3, favorite: false },
-            { user_id: janeDoe.user_id, album_id: laWoman.album_id, rating: 5, favorite: true }
+            { user_id: johnDoe.user_id, album_id: abbeyRoad.album_id, rating: 5, favorite: true, review: 'A masterpiece of rock music.', created_at: now },
+            { user_id: johnDoe.user_id, album_id: stickyFingers.album_id, rating: 4, favorite: true, review: 'Great album with classic hits.', created_at: now },
+            { user_id: johnDoe.user_id, album_id: laWoman.album_id, rating: 3, favorite: false, review: 'Good, but not their best work.', created_at: now },
+            { user_id: janeDoe.user_id, album_id: laWoman.album_id, rating: 5, favorite: true, review: 'Absolutely love this album!', created_at: now }
         ];
 
         await albumController.assignAlbums(assignments);

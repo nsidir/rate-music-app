@@ -36,6 +36,10 @@ export class AlbumController {
     return await this.albumService.getAlbumWithStats(albumId);
   }
 
+  async getAlbumReviews(albumId: number) {
+    return await this.albumService.getAlbumReviews(albumId);
+  }
+
   async searchAlbum(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { keyword } = req.query;

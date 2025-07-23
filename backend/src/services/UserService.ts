@@ -1,4 +1,4 @@
-//src/services/UserService.ts
+// src/services/UserService.ts
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { User, CreateUser } from "../types";
@@ -114,11 +114,12 @@ export class UserService implements IEntityService<User, CreateUser> {
   }
 
   // Get user-specific data for an album
-  async getAlbumUserData(userId: number, albumId: number): Promise<{ rating: number | null, favorite: boolean } | null> {
+  async getAlbumUserData(userId: number, albumId: number): Promise<{ rating: number | null, favorite: boolean, review: string | null } | null> {
       const [data] = await this.dbService.getDb()
           .select({
               rating: usersToAlbumsTable.rating,
               favorite: usersToAlbumsTable.favorite,
+              review: usersToAlbumsTable.review,
           })
           .from(usersToAlbumsTable)
           .where(and(
@@ -126,7 +127,7 @@ export class UserService implements IEntityService<User, CreateUser> {
               eq(usersToAlbumsTable.album_id, albumId)
           ));
 
-      return data ? { rating: data.rating, favorite: data.favorite } : null;
+      return data ? { rating: data.rating, favorite: data.favorite, review: data.review } : null;
   }
 
   // Fetch only favorite albums (where favorite is true) for the given user.
@@ -162,6 +163,23 @@ export class UserService implements IEntityService<User, CreateUser> {
       .onConflictDoUpdate({
         target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
         set: { favorite: true },
+      });
+  }
+
+  // Add/update a review for an album
+  async addReview(userId: number, albumId: number, comment: string): Promise<void> {
+    await this.dbService.getDb()
+      .insert(usersToAlbumsTable)
+      .values({
+        user_id: userId,
+        album_id: albumId,
+        review: comment,
+      })
+      .onConflictDoUpdate({
+        target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
+        set: { 
+          review: comment,
+        },
       });
   }
 }

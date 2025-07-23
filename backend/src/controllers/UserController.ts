@@ -60,6 +60,10 @@ export class UserController {
     await this.userService.addRating(userId, albumId, rating);
   }
 
+  async addReview(userId: number, albumId: number, comment: string) {
+    await this.userService.addReview(userId, albumId, comment);
+  }
+
   async removeFavorite(userId: number, albumId: number): Promise<void> {
     await this.userService.removeFavorite(userId, albumId);
   }

@@ -1,5 +1,11 @@
 run schema: npx drizzle-kit push
 
-seed: npx tsx db/seed.ts
+# Generate migration files
+npx drizzle-kit generate
+
+# Apply migrations to your database
+npx drizzle-kit migrate
+
+seed: npx tsx src/db/seed_example
 
 test: npm test

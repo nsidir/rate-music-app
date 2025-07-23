@@ -73,6 +73,41 @@ app.get('/api/albums/:id', (req, res, next) => {
     .catch(next);
 });
 
+// Get all reviews for an album
+app.get('/api/albums/:id/reviews', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const albumId = parseInt(req.params.id, 10);
+    const reviews = await albumController.getAlbumReviews(albumId);
+    res.json(reviews);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Add/update a review for an album
+app.post('/api/albums/:id/reviews', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const albumId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+    const { comment } = req.body;
+    
+    if (!comment || typeof comment !== 'string' || comment.trim().length === 0) {
+      res.status(400).json({ error: 'Review comment is required and must be a non-empty string' });
+      return;
+    }
+    
+    if (comment.trim().length > 2000) {
+      res.status(400).json({ error: 'Review comment must be less than 2000 characters' });
+      return;
+    }
+    
+    await userController.addReview(userId, albumId, comment.trim());
+    res.json({ message: `Review added for album with id:${albumId} by user with id:${userId}` });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Add album to favorites
 app.post('/api/albums/:id/favorites', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
   try {
@@ -103,6 +138,12 @@ app.post('/api/albums/:id/ratings', AuthMiddleware.authenticateJWT, async (req: 
         const albumId = parseInt(req.params.id, 10);
         const userId = req.user.id;
         const { rating } = req.body;
+        
+        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+            res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+            return;
+        }
+        
         const result = await userController.addRating(userId, albumId, rating);
         res.json({ message: `Rating for album with id:${albumId} updated for user with id:${userId} `, result });
     } catch (error) {
@@ -110,7 +151,7 @@ app.post('/api/albums/:id/ratings', AuthMiddleware.authenticateJWT, async (req: 
     }
 });
 
-// Get user-specific album data (rating and favorite status)
+// Get user-specific album data (rating, favorite status, and review)
 app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res, next) => {
     try {
         const albumId = parseInt(req.params.albumId, 10);
@@ -122,7 +163,7 @@ app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, asyn
     }
 });
 
-//Get a user's profile info (favorites and ratings)
+// Get a user's profile info (favorites and ratings)
 app.get('/api/user/profile/:id', (req: Request, res: Response, next: NextFunction) => {
   userController.getUserProfile(req, res).catch(next);
 });
@@ -132,7 +173,11 @@ app.get('/api/albums/search', (req, res, next) => {
   albumController.searchAlbum(req, res, next).catch(next);
 });
 
-
+// Error handling middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 // Start the server
 app.listen(port, () => {

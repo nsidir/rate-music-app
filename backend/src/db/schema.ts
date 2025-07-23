@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, primaryKey, varchar, check, boolean } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, varchar, check, boolean, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Users table
@@ -39,6 +39,7 @@ export const usersToAlbumsTable = pgTable(
     rating: integer("rating"),
     favorite: boolean("favorite").notNull().default(false),
     review: varchar({ length: 2000 }).default(''),
+    created_at: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.user_id, table.album_id] }),
