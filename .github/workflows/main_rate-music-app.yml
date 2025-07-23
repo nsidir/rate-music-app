@@ -22,3 +22,10 @@ jobs:
           script: |
             cd rate-music-app
             git pull origin main
+            npm install
+            cd backend
+            npm install
+            cd ../frontend
+            npm install
+            cd ../
+            pm2 restart rate-music-app
