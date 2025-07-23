@@ -82,6 +82,8 @@ import FavoriteIcon from './FavoriteIcon.vue';
 import { useUserStore } from '../stores/user';
 import HeaderBar from './HeaderBar.vue';
 
+const apiUrl = import.meta.env.VITE_API_URL
+
 const searchQuery = ref('');
 
 interface Album {
@@ -115,7 +117,7 @@ const isFavorite = ref(false);
 async function fetchAlbumData() {
   try {
     const albumId = Number(route.params.id);
-    const response = await fetch(`/api/albums/${albumId}`);
+    const response = await fetch(`${apiUrl}/albums/${albumId}`);
     if (response.ok) {
       album.value = await response.json();
     } else {
@@ -131,7 +133,7 @@ async function fetchAlbumData() {
 async function fetchReviews() {
   try {
     const albumId = Number(route.params.id);
-    const response = await fetch(`/api/albums/${albumId}/reviews`);
+    const response = await fetch(`${apiUrl}/albums/${albumId}/reviews`);
     if (response.ok) {
       reviews.value = await response.json();
     } else {
@@ -160,7 +162,7 @@ onMounted(async () => {
   if (userStore.loggedIn && album.value) {
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const statusResponse = await fetch(`/api/user/albums/${album.value.album_id}/status`, {
+      const statusResponse = await fetch(`${apiUrl}/user/albums/${album.value.album_id}/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statusResponse.ok) {
@@ -194,7 +196,7 @@ const submitReview = async () => {
 
   try {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const response = await fetch(`/api/albums/${album.value.album_id}/reviews`, {
+    const response = await fetch(`${apiUrl}/albums/${album.value.album_id}/reviews`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -222,7 +224,7 @@ const submitReview = async () => {
 const updateRating = async () => {
     if (!album.value) return;
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    await fetch(`/api/albums/${album.value.album_id}/ratings`, {
+    await fetch(`${apiUrl}/albums/${album.value.album_id}/ratings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -239,7 +241,7 @@ const updateFavorite = async () => {
   if (!album.value) return;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   const method = isFavorite.value ? 'POST' : 'DELETE';
-  await fetch(`/api/albums/${album.value.album_id}/favorites`, {
+  await fetch(`${apiUrl}/albums/${album.value.album_id}/favorites`, {
     method: method,
     headers: { 'Authorization': `Bearer ${token}` },
   });

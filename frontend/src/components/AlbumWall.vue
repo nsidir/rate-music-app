@@ -20,6 +20,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
+const apiUrl = import.meta.env.VITE_API_URL
+
 // Define the Album interface to match the API response.
 interface Album {
   album_id: number
@@ -36,7 +38,7 @@ const albums = ref<Album[]>([])
 
 onMounted(async () => {
   try {
-    const response = await fetch('/api/albums')
+    const response = await fetch(`${apiUrl}/albums`)
     if (response.ok) {
       albums.value = await response.json()
     }

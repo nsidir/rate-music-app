@@ -144,25 +144,24 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
 
   // Get all reviews for a specific album
   async getAlbumReviews(albumId: number): Promise<any[]> {
-    const db = this.dbService.getDb();
-    
-    const reviews = await db
-      .select({
-        review_id: usersToAlbumsTable.user_id,
-        username: usersTable.username,
-        comment: usersToAlbumsTable.review,
-        created_at: usersToAlbumsTable.created_at
-      })
-      .from(usersToAlbumsTable)
-      .innerJoin(usersTable, eq(usersToAlbumsTable.user_id, usersTable.user_id))
-      .where(and(
-        eq(usersToAlbumsTable.album_id, albumId),
-        isNotNull(usersToAlbumsTable.review),
-        sql`${usersToAlbumsTable.review} != ''`
-      ))
-      .orderBy(desc(usersToAlbumsTable.created_at))
-      .execute();
-    
-    return reviews;
+      const db = this.dbService.getDb();
+      
+      const reviews = await db
+          .select({
+              review_id: usersToAlbumsTable.user_id,
+              username: usersTable.username,
+              comment: usersToAlbumsTable.review,
+              created_at: usersToAlbumsTable.created_at
+          })
+          .from(usersToAlbumsTable)
+          .innerJoin(usersTable, eq(usersToAlbumsTable.user_id, usersTable.user_id))
+          .innerJoin(albumsTable, eq(usersToAlbumsTable.album_id, albumsTable.album_id))
+          .where(and(
+              eq(usersToAlbumsTable.album_id, albumId),
+              isNotNull(usersToAlbumsTable.review),
+              sql`${usersToAlbumsTable.review} != ''`
+          ))
+          .orderBy(desc(usersToAlbumsTable.created_at));      
+      return reviews;
   }
 }
