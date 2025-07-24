@@ -62,10 +62,10 @@ app.get('/api/albums', (req, res, next) => {
         .catch(next);
 });
 
-// // Search for an album
-// app.get('/api/albums/search', (req, res, next) => {
-//     albumController.searchAlbum(req, res, next).catch(next);
-// });
+// Search for an album
+app.get('/api/albums/search', (req, res, next) => {
+    albumController.searchAlbum(req, res, next).catch(next);
+});
 
 
 // Get all reviews for an album
@@ -103,10 +103,6 @@ app.post('/api/albums/:id/reviews', AuthMiddleware.authenticateJWT, async (req: 
         const userId = req.user.id;
         const { comment } = req.body;
 
-        if (!comment || typeof comment !== 'string' || comment.trim().length === 0) {
-            res.status(400).json({ error: 'Review comment is required and must be a non-empty string' });
-            return;
-        }
         if (comment.trim().length > 2000) {
             res.status(400).json({ error: 'Review comment must be less than 2000 characters' });
             return;
@@ -150,7 +146,14 @@ app.post('/api/albums/:id/ratings', AuthMiddleware.authenticateJWT, async (req: 
         const userId = req.user.id;
         const { rating } = req.body;
 
-        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+        //Should be able to send null rating to remove a rating
+        if (rating === null) {
+            await userController.removeRating(userId, albumId);
+            res.json({ message: `Rating for album with id:${albumId} removed for user with id:${userId}` });
+            return;
+        }
+
+        else if (typeof rating !== 'number' || rating < 1 || rating > 5) {
             res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
             return;
         }

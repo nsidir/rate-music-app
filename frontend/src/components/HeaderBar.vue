@@ -46,7 +46,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-// Emit updated value as the user types.
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement
   emit('update:modelValue', target.value)
@@ -60,18 +59,15 @@ function onKeyUp(event: KeyboardEvent) {
   }
 }
 
-// Router for navigation.
 const router = useRouter()
 
 // When clicking "Login", navigate to the login page.
 function login() {
-  console.log("Login clicked")
   router.push('/login')
 }
 
 // When clicking "Signup", navigate to the signup page.
 const signup = () => {
-  console.log("Signup clicked")
   router.push('/signup')
 }
 
