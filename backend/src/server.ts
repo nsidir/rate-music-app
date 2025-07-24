@@ -144,7 +144,14 @@ app.post('/api/albums/:id/ratings', AuthMiddleware.authenticateJWT, async (req: 
         const userId = req.user.id;
         const { rating } = req.body;
 
-        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+        //Should be able to send null rating to remove a rating
+        if (rating === null) {
+            await userController.removeRating(userId, albumId);
+            res.json({ message: `Rating for album with id:${albumId} removed for user with id:${userId}` });
+            return;
+        }
+
+        else if (typeof rating !== 'number' || rating < 1 || rating > 5) {
             res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
             return;
         }

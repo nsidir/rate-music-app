@@ -98,6 +98,22 @@ export class UserService implements IEntityService<User, CreateUser> {
       });
   }
 
+  // Remove album rating for user by making it null
+  async removeRating(userId: number, albumId: number): Promise<void> {
+    await this.dbService.getDb()
+      .insert(usersToAlbumsTable)
+      .values({
+        user_id: userId,
+        album_id: albumId,
+        rating: null,  // Set rating to null to remove it
+      })
+      .onConflictDoUpdate({
+        target: [usersToAlbumsTable.user_id, usersToAlbumsTable.album_id],
+        set: { rating: null },
+      });
+  }
+
+
   // Remove album from user's favorites
   async removeFavorite(userId: number, albumId: number): Promise<void> {
     await this.dbService.getDb()
