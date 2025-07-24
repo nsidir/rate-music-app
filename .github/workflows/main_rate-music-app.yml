@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd rate-music-app
+            git reset --hard HEAD
             git pull origin main
             npm install
             cd backend
@@ -28,4 +29,4 @@ jobs:
             cd ../frontend
             npm install
             cd ../
-            pm2 restart rate-music-app
+            pm2 restart --update-env rate-music-app
