@@ -38,7 +38,6 @@
       <section class="ratings" v-if="profile.ratings && profile.ratings.length">
         <h3>Rated Albums</h3>
         <div class="album-grid">
-          <!-- if rating is null don't show the album -->
           <div v-for="rating in profile.ratings.filter(r => r.rating !== null)"
                :key="rating.album_id"
                class="album-card">
@@ -59,8 +58,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import type { User } from '../stores/user'
 import HeaderBar from './HeaderBar.vue'
@@ -88,41 +87,53 @@ const profile = ref<UserProfile>({
 })
 const loading = ref(false)
 const error = ref('')
-const router = useRouter()
 
+const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const userId = userStore.user?.id
 
-// If user is not logged in, redirect to login
-if (!userId) {
-  router.push('/login')
-}
-
-onMounted(async () => {
+const fetchProfile = async () => {
   loading.value = true
   error.value = ''
-  // Retrieve JWT token
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  const apiUrl = import.meta.env.VITE_API_URL
   try {
-    const apiUrl = import.meta.env.VITE_API_URL
-    const response = await fetch(`${apiUrl}/user/profile/${userId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    if (route.params.username) {
+      const response = await fetch(`${apiUrl}/user/profile/username/${route.params.username}`)
+      if (!response.ok) {
+        error.value = 'Failed to fetch user profile'
+        return
       }
-    })
-    if (!response.ok) {
-      error.value = 'Failed to fetch profile data'
-      return
+      const data = await response.json()
+      profile.value = data
+    } else {
+      if (!userId) {
+        router.push('/login')
+        return
+      }
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+      const response = await fetch(`${apiUrl}/user/profile/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (!response.ok) {
+        error.value = 'Failed to fetch your profile'
+        return
+      }
+      const data = await response.json()
+      profile.value = data
     }
-    const data = await response.json()
-    profile.value = data
   } catch (err: any) {
     error.value = err.message || 'An error occurred while fetching profile data'
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(fetchProfile)
+watch(() => route.params.username, fetchProfile)
 </script>
 
 <style scoped>

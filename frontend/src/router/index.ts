@@ -32,7 +32,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/profile',
     name: 'Profile',
     component: Profile
+  },
+  {
+    path: '/user/:username',
+    name: 'UserProfile',
+    component: () => import('../components/Profile.vue')
   }
+
 ]
 
 const router = createRouter({

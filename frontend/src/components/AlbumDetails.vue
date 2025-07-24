@@ -60,7 +60,9 @@
           </div>
           <div v-for="review in reviews" :key="review.review_id" class="review">
             <div class="review-header">
-              <strong>{{ review.username }}</strong>
+              <!-- <strong>{{ review.username }}</strong> -->
+              <router-link :to="`/user/${review.username}`">{{ review.username }}</router-link>
+
               <small>{{ formatDate(review.created_at) }}</small>
             </div>
             <p class="review-text">{{ review.comment }}</p>

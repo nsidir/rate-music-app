@@ -21,6 +21,8 @@ import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddlewar
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+console.log('DEBUG DATABASE_URL:', process.env.DATABASE_URL);
+//dotenv.config();
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
@@ -176,6 +178,13 @@ app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, asyn
 app.get('/api/user/profile/:id', (req, res, next) => {
     userController.getUserProfile(req, res).catch(next);
 });
+
+//// Returns user profile data for a given username
+
+app.get('/api/user/profile/username/:username', (req, res, next) => {
+  userController.getUserProfileByUsername(req, res).catch(next);
+});
+
 
 // --- Error Handling ---
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

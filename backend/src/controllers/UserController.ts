@@ -52,6 +52,24 @@ export class UserController {
     }
   }
 
+  async getUserProfileByUsername(req: any, res: any): Promise<void> {
+  try {
+    const { username } = req.params;
+    const user = await this.userService.getByUsername(username);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    const ratings = await this.userService.getUserRatings(user.user_id);
+    const favorites = await this.userService.getUserFavorites(user.user_id);
+    res.json({ user, ratings, favorites });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching user profile' });
+  }
+}
+
+
+
   async addFavorite(userId: number, albumId: number): Promise<void> {
     await this.userService.addFavorite(userId, albumId);
   }
