@@ -21,8 +21,6 @@ import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddlewar
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-console.log('DEBUG DATABASE_URL:', process.env.DATABASE_URL);
-//dotenv.config();
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
