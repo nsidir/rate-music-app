@@ -44,10 +44,21 @@
             rows="4"
             cols="50"
           ></textarea>
-          <button @click="submitReview" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
-          </button>
+          <div class="review-form-buttons">
+            <button @click="submitReview" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
+            </button>
+            <button 
+              v-if="userHasReview" 
+              @click="deleteReview" 
+              :disabled="isDeleting"
+              class="delete-button"
+            >
+              {{ isDeleting ? 'Deleting...' : 'Delete Review' }}
+            </button>
+          </div>
           <p v-if="reviewError" class="error-message">{{ reviewError }}</p>
+          <p v-if="reviewSuccess" class="success-message">{{ reviewSuccess }}</p>
         </div>
         <p v-else class="login-prompt">
           <router-link to="/login">Log in</router-link> to write a review.
@@ -75,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import StarRating from './StarRating.vue';
 import FavoriteIcon from './FavoriteIcon.vue';
@@ -108,10 +119,18 @@ const album = ref<Album | null>(null);
 const reviews = ref<Review[]>([]);
 const newReview = ref('');
 const isSubmitting = ref(false);
+const isDeleting = ref(false);
 const reviewError = ref('');
+const reviewSuccess = ref('');
 
 const userRating = ref<number>(0); 
 const isFavorite = ref(false);
+const userHasReview = ref(false);
+
+// Computed property to check if user has a review
+const userHasExistingReview = computed(() => {
+  return userHasReview.value || newReview.value.trim() !== '';
+});
 
 // Helper function to fetch/refresh album data
 async function fetchAlbumData() {
@@ -153,6 +172,14 @@ function formatDate(dateString: string): string {
   });
 }
 
+// Clear messages after a timeout
+function clearMessages() {
+  setTimeout(() => {
+    reviewError.value = '';
+    reviewSuccess.value = '';
+  }, 3000);
+}
+
 onMounted(async () => {
   // Cleaned up onMounted logic
   await fetchAlbumData();
@@ -173,6 +200,7 @@ onMounted(async () => {
           // Pre-fill review if user has one
           if (data.review) {
             newReview.value = data.review;
+            userHasReview.value = true;
           }
         }
       }
@@ -186,6 +214,7 @@ onMounted(async () => {
 const submitReview = async () => {
   if (!newReview.value.trim()) {
     reviewError.value = 'Review cannot be empty';
+    clearMessages();
     return;
   }
 
@@ -193,6 +222,7 @@ const submitReview = async () => {
 
   isSubmitting.value = true;
   reviewError.value = '';
+  reviewSuccess.value = '';
 
   try {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -206,17 +236,60 @@ const submitReview = async () => {
     });
 
     if (response.ok) {
-      newReview.value = '';
+      userHasReview.value = true;
+      reviewSuccess.value = 'Review submitted successfully!';
       await fetchReviews(); // Refresh reviews list
+      clearMessages();
     } else {
       const errorData = await response.json();
       reviewError.value = errorData.error || 'Failed to submit review';
+      clearMessages();
     }
   } catch (error) {
     console.error('Error submitting review:', error);
     reviewError.value = 'Network error. Please try again.';
+    clearMessages();
   } finally {
     isSubmitting.value = false;
+  }
+};
+
+// Delete review by sending empty comment
+const deleteReview = async () => {
+  if (!album.value) return;
+
+  isDeleting.value = true;
+  reviewError.value = '';
+  reviewSuccess.value = '';
+
+  try {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const response = await fetch(`${apiUrl}/albums/${album.value.album_id}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ comment: '' }) // Send empty comment to delete
+    });
+
+    if (response.ok) {
+      newReview.value = '';
+      userHasReview.value = false;
+      reviewSuccess.value = 'Review deleted successfully!';
+      await fetchReviews(); // Refresh reviews list
+      clearMessages();
+    } else {
+      const errorData = await response.json();
+      reviewError.value = errorData.error || 'Failed to delete review';
+      clearMessages();
+    }
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    reviewError.value = 'Network error. Please try again.';
+    clearMessages();
+  } finally {
+    isDeleting.value = false;
   }
 };
 
@@ -376,6 +449,12 @@ const toggleFavorite = () => {
   font-family: inherit;
 }
 
+.review-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .review-form button {
   background-color: #606ff2;
   color: white;
@@ -395,8 +474,26 @@ const toggleFavorite = () => {
   cursor: not-allowed;
 }
 
+.delete-button {
+  background-color: #dc3545 !important;
+}
+
+.delete-button:hover:not(:disabled) {
+  background-color: #c82333 !important;
+}
+
+.delete-button:disabled {
+  background-color: #6c757d !important;
+}
+
 .error-message {
   color: #ff6b6b;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.success-message {
+  color: #28a745;
   font-size: 0.9em;
   margin-top: 5px;
 }
@@ -464,6 +561,9 @@ const toggleFavorite = () => {
     flex-direction: column;
     gap: 15px;
     align-items: center;
+  }
+  .review-form-buttons {
+    flex-direction: column;
   }
 }
 </style>
