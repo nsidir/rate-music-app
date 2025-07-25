@@ -17,7 +17,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 // Register services
@@ -26,10 +25,21 @@ container.register(UserService, { useClass: UserService });
 container.register(AlbumService, { useClass: AlbumService });
 container.register(ArtistService, { useClass: ArtistService });
 
+/**
+ * Utility to create a URL-friendly slug from artist name
+ */
+function toSlug(str: string) {
+    return str
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+}
+
 interface SeedResult {
     createdUsers: Array<{ user_id: number; username: string; email: string }>;
     createdAlbums: Array<{ album_id: number; album_name: string; artist_id: number }>;
-    createdArtists: Array<{ artist_id: number; artist_name: string }>;
+    createdArtists: Array<{ artist_id: number; artist_name: string; artist_slug: string }>;
 }
 
 async function seedDatabase(): Promise<SeedResult> {
@@ -39,13 +49,19 @@ async function seedDatabase(): Promise<SeedResult> {
 
     try {
         console.log('--- Artist Operations ---');
-        const artistsToCreate: CreateArtist[] = [
-            { artist_name: 'The Beatles' },
-            { artist_name: 'The Rolling Stones' },
-            { artist_name: 'The Doors' },
-            { artist_name: 'Led Zeppelin' },
-            { artist_name: 'Black Sabbath' }
+        const artistNames = [
+            'The Beatles',
+            'The Rolling Stones',
+            'The Doors',
+            'Led Zeppelin',
+            'Black Sabbath'
         ];
+
+        const artistsToCreate: CreateArtist[] = artistNames.map(name => ({
+            artist_name: name,
+            artist_slug: toSlug(name)
+        }));
+
         const createdArtists = await Promise.all(
             artistsToCreate.map(artist => artistController.createArtist(artist))
         );
@@ -66,15 +82,35 @@ async function seedDatabase(): Promise<SeedResult> {
         const albumsToCreate: CreateAlbum[] = createdArtists.map(artist => {
             switch (artist.artist_name) {
                 case 'The Beatles':
-                    return { album_name: 'Abbey Road', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25' };
+                    return {
+                        album_name: 'Abbey Road',
+                        artist_id: artist.artist_id,
+                        cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25'
+                    };
                 case 'The Rolling Stones':
-                    return { album_name: 'Sticky Fingers', artist_id: artist.artist_id, cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg' };
+                    return {
+                        album_name: 'Sticky Fingers',
+                        artist_id: artist.artist_id,
+                        cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg'
+                    };
                 case 'The Doors':
-                    return { album_name: 'L.A. Woman', artist_id: artist.artist_id, cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg' };
+                    return {
+                        album_name: 'L.A. Woman',
+                        artist_id: artist.artist_id,
+                        cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg'
+                    };
                 case 'Led Zeppelin':
-                    return { album_name: 'Led Zeppelin IV', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee' };
+                    return {
+                        album_name: 'Led Zeppelin IV',
+                        artist_id: artist.artist_id,
+                        cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee'
+                    };
                 case 'Black Sabbath':
-                    return { album_name: 'Paranoid', artist_id: artist.artist_id, cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5' };
+                    return {
+                        album_name: 'Paranoid',
+                        artist_id: artist.artist_id,
+                        cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5'
+                    };
                 default:
                     throw new Error(`Unexpected artist: ${artist.artist_name}`);
             }
