@@ -25,6 +25,7 @@ html, body {
 body {
   background-color: #0a1527;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding-bottom: 20px;
 }
 
 #app, #app-container {
