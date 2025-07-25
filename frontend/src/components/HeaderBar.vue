@@ -122,7 +122,9 @@ const goToProfile = () => {
 }
 
 input[type="text"] {
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
+  min-width: 120px;
   padding: 8px;
   border: none;
   border-radius: 4px;
