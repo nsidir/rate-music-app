@@ -112,7 +112,8 @@ const goToProfile = () => {
   flex-grow: 1;
   display: flex;
   justify-content: center;
-  margin-right: 10px;
+  margin-right: 20px;
+  margin-left: 20px;
 }
 
 .right {
