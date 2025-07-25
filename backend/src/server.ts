@@ -60,6 +60,12 @@ app.get('/api/albums', (req, res, next) => {
         .catch(next);
 });
 
+app.get('/api/album-stats', (req, res, next) => {
+    albumController.getAllAlbumsWithStats()
+        .then(albums => res.json(albums))
+        .catch(next);
+});
+
 // Search for an album
 app.get('/api/albums/search', (req, res, next) => {
     albumController.searchAlbum(req, res, next).catch(next);
