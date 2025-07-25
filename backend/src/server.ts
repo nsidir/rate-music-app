@@ -21,8 +21,6 @@ import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddlewar
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-console.log('DEBUG DATABASE_URL:', process.env.DATABASE_URL);
-//dotenv.config();
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
@@ -58,6 +56,12 @@ app.post('/api/login', (req, res, next) => {
 // Albums
 app.get('/api/albums', (req, res, next) => {
     albumController.getAllAlbums()
+        .then(albums => res.json(albums))
+        .catch(next);
+});
+
+app.get('/api/album-stats', (req, res, next) => {
+    albumController.getAllAlbumsWithStats()
         .then(albums => res.json(albums))
         .catch(next);
 });

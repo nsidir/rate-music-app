@@ -16,6 +16,10 @@ export class AlbumController {
     return await this.albumService.getAll();
   }
 
+  async getAllAlbumsWithStats(): Promise<any[]> {
+    return await this.albumService.getAllAlbumsWithStats();
+  }
+
   async getAlbumById(id: number): Promise<Album | null> {
     return await this.albumService.getById(id);
   }

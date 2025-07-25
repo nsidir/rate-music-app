@@ -5,6 +5,7 @@ import AlbumDetails from '../components/AlbumDetails.vue'
 import Login from '../components/Login.vue'
 import Signup from '../components/Signup.vue'
 import Profile from '../components/Profile.vue'
+import TopAlbums from '../components/TopAlbums.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -36,7 +37,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/user/:username',
     name: 'UserProfile',
-    component: () => import('../components/Profile.vue')
+    component: Profile
+  },
+  {
+    path: '/top',
+    name: 'TopAlbums',
+    component: TopAlbums
   }
 
 ]

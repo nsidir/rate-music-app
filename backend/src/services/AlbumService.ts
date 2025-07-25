@@ -47,7 +47,6 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
   }
 
   async getAlbumWithStats(albumId: number): Promise<any | null> {
-    // First, get the album's core details and artist name
     const [albumDetails] = await this.dbService.getDb().select({
         album_id: albumsTable.album_id,
         album_name: albumsTable.album_name,
@@ -63,24 +62,44 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       return null;
     }
 
-    // Then, calculate the aggregate stats for that album
     const [albumStats] = await this.dbService.getDb()
       .select({
-        // Calculate the average of non-null ratings
         avgRating: avg(usersToAlbumsTable.rating),
-        // Count rows where 'favorite' is true
         favoriteCount: count(sql`CASE WHEN ${usersToAlbumsTable.favorite} = true THEN 1 END`),
       })
       .from(usersToAlbumsTable)
       .where(eq(usersToAlbumsTable.album_id, albumId));
 
-    // Combine the results
     return {
       ...albumDetails,
       avgRating: albumStats.avgRating ? parseFloat(albumStats.avgRating).toFixed(2) : null,
       favoriteCount: Number(albumStats.favoriteCount) || 0,
     };
   }
+
+  async getAllAlbumsWithStats(): Promise<any[]> {
+    const albumsWithStats = await this.dbService.getDb()
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_name: artistsTable.artist_name,
+        cover_url: albumsTable.cover_url,
+        avgRating: avg(usersToAlbumsTable.rating),
+        ratingCount: count(usersToAlbumsTable.rating),
+      })
+      .from(albumsTable)
+      .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
+      .leftJoin(usersToAlbumsTable, eq(albumsTable.album_id, usersToAlbumsTable.album_id))
+      .groupBy(albumsTable.album_id, artistsTable.artist_name)
+      .orderBy(desc(sql`(${avg(usersToAlbumsTable.rating)})`));
+
+    return albumsWithStats.map(album => ({
+      ...album,
+      avgRating: album.avgRating ? parseFloat(album.avgRating).toFixed(2) : null,
+      ratingCount: Number(album.ratingCount) || 0,
+    }));
+  }
+
 
   async findAlbumByNameAndArtist(albumName: string, artistName: string): Promise<Album | null> {
     const db = this.dbService.getDb();

@@ -69,6 +69,14 @@ const filteredAlbums = computed(() => {
   max-width: 1200px;
   margin: 0 auto;
   align-items: center;
+  justify-content: flex-start;
+}
+
+/* For small screens where there is only one album per row */
+@media (max-width: 474px) { 
+  .album-wall > div {
+    justify-content: center;
+  }
 }
 
 .card {

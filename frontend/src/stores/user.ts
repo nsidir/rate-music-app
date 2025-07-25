@@ -26,7 +26,25 @@ export const useUserStore = defineStore('user', () => {
     sessionStorage.removeItem('token')
   }
 
-  return { loggedIn, user, login, logout }
+    function checkAuth() {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp * 1000 < Date.now()) {
+          // Token is expired
+          logout();
+        }
+      } catch (error) {
+        console.error("Invalid token:", error);
+        logout();
+      }
+    } else {
+        logout();
+    }
+  }
+
+  return { loggedIn, user, login, logout, checkAuth }
 }, {
   persist: {
     storage: localStorage,

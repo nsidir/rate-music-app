@@ -16,6 +16,7 @@
         @keyup="onKeyUp"
         placeholder="Search albums..."
       />
+      <button class="top-albums" @click="goToTopAlbums">Top Albums</button>
     </div>
     <!-- Right Section: Authentication buttons -->
     <div class="right">
@@ -54,8 +55,7 @@ function onInput(event: Event) {
 function onKeyUp(event: KeyboardEvent) {
   if (event.key === 'Enter') {
     console.log('Enter pressed. Current value:', props.modelValue)
-    // Optionally, emit a custom event:
-    // emit('enterPressed', props.modelValue)
+    // TODO: Implement search functionality here
   }
 }
 
@@ -74,6 +74,10 @@ const signup = () => {
 // When clicking "Profile", navigate to the profile page.
 const goToProfile = () => {
   router.push('/profile')
+}
+
+const goToTopAlbums = () => {
+  router.push('/top');
 }
 </script>
 
@@ -112,7 +116,8 @@ const goToProfile = () => {
   flex-grow: 1;
   display: flex;
   justify-content: center;
-  margin-right: 10px;
+  margin-right: 20px;
+  margin-left: 20px;
 }
 
 .right {
@@ -121,7 +126,9 @@ const goToProfile = () => {
 }
 
 input[type="text"] {
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
+  min-width: 120px;
   padding: 8px;
   border: none;
   border-radius: 4px;
@@ -140,4 +147,19 @@ button {
 button:hover {
   background-color: #777;
 }
+
+button.top-albums {
+  background: linear-gradient(135deg, #f77a48, #f0a500);
+  color: #fff;
+  padding: 8px 16px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(247, 201, 72, 0.4);
+  margin-left: 10px;
+}
+
+button.top-albums:hover {
+  background: linear-gradient(135deg, #f99a48, #f4b200);
+  box-shadow: 0 3px 10px rgba(247, 201, 72, 0.5);
+}
+
 </style>

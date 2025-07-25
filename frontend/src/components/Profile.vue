@@ -11,7 +11,7 @@
         </div>
         <div class="user-details">
           <h2>{{ profile.user.username }}</h2>
-          <p>Email: {{ profile.user.email }}</p>
+          <p v-if="isOwnProfile">Email: {{ profile.user.email }}</p>
         </div>
       </section>
 
@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import type { User } from '../stores/user'
@@ -92,6 +92,9 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const userId = userStore.user?.id
+
+// Determine if it's own profile
+const isOwnProfile = computed(() => route.path === '/profile')
 
 const fetchProfile = async () => {
   loading.value = true

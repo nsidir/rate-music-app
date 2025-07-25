@@ -3,7 +3,7 @@ import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { User, CreateUser } from "../types";
 import { usersTable, usersToAlbumsTable, albumsTable, artistsTable } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ilike } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import bcrypt from 'bcrypt';
 
@@ -48,7 +48,8 @@ export class UserService implements IEntityService<User, CreateUser> {
 
   // Get user by username
   async getByUsername(username: string): Promise<User | null> {
-    const [user] = await this.dbService.getDb().select().from(usersTable).where(eq(usersTable.username, username));
+    //should be case-insensitive
+    const [user] = await this.dbService.getDb().select().from(usersTable).where(ilike(usersTable.username, username));
     return user ?? null;
   }
 
