@@ -43,8 +43,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/top',
     name: 'TopAlbums',
     component: TopAlbums
+  },
+  {
+    path: '/artist/:artistSlug',
+    name: 'ArtistPage',
+    component: () => import('../components/ArtistPage.vue'),
+    props: true
   }
-
 ]
 
 const router = createRouter({
