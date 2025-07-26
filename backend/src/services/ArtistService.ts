@@ -5,9 +5,11 @@ import { Artist, CreateArtist } from "../types";
 import { artistsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
+import { albumsTable } from "../db/schema";
 
 @injectable()
 export class ArtistService implements IEntityService<Artist, CreateArtist> {
+ 
   constructor(@inject(DatabaseService) private dbService: DatabaseService) {}
 
   async create(data: CreateArtist): Promise<Artist> {
@@ -32,4 +34,28 @@ export class ArtistService implements IEntityService<Artist, CreateArtist> {
   async delete(id: number): Promise<void> {
     await this.dbService.getDb().delete(artistsTable).where(eq(artistsTable.artist_id, id));
   }
+
+  async getBySlug(slug: string): Promise<Artist & { albums: any[] } | null> {
+  const db = this.dbService.getDb();
+
+  // 1. Get the artist by slug
+  const [artist] = await db
+    .select()
+    .from(artistsTable)
+    .where(eq(artistsTable.artist_slug, slug));
+
+  if (!artist) return null;
+
+  // 2. Get all albums for this artist
+  const albums = await db
+    .select()
+    .from(albumsTable)
+    .where(eq(albumsTable.artist_id, artist.artist_id));
+
+  // 3. Return artist info + albums
+  return { ...artist, albums };
 }
+
+
+}
+
