@@ -3,6 +3,10 @@ import { injectable, inject } from "tsyringe";
 import { ArtistService } from "../services/ArtistService";
 import { Artist, CreateArtist } from "../types";
 
+
+
+
+
 @injectable()
 export class ArtistController {
   constructor(@inject(ArtistService) private artistService: ArtistService) {}
@@ -26,4 +30,12 @@ export class ArtistController {
   async deleteArtist(id: number): Promise<void> {
     await this.artistService.delete(id);
   }
+
+  async getArtistBySlug(slug: string): Promise<Artist | null> {
+    return await this.artistService.getBySlug(slug); 
+  }
+
+  
 }
+
+
