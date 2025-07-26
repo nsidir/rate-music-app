@@ -181,6 +181,22 @@ app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, asyn
     }
 });
 
+
+app.get('/artists/:slug/discography', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    // Use your artistController (already set up above!)
+    const artist = await artistController.getArtistBySlug(slug);
+    if (!artist) {
+      return res.status(404).json({ error: "Artist not found" });
+    }
+    res.json(artist);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 // Get a user's profile info (favorites and ratings)
 app.get('/api/user/profile/:id', (req, res, next) => {
     userController.getUserProfile(req, res).catch(next);
