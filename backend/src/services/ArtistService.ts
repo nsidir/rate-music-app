@@ -38,7 +38,6 @@ export class ArtistService implements IEntityService<Artist, CreateArtist> {
   async getBySlug(slug: string): Promise<Artist & { albums: any[] } | null> {
   const db = this.dbService.getDb();
 
-  // 1. Get the artist by slug
   const [artist] = await db
     .select()
     .from(artistsTable)
@@ -46,13 +45,11 @@ export class ArtistService implements IEntityService<Artist, CreateArtist> {
 
   if (!artist) return null;
 
-  // 2. Get all albums for this artist
   const albums = await db
     .select()
     .from(albumsTable)
     .where(eq(albumsTable.artist_id, artist.artist_id));
 
-  // 3. Return artist info + albums
   return { ...artist, albums };
 }
 
