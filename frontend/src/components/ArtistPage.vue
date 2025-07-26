@@ -22,8 +22,8 @@ const route = useRoute();
 const artist = ref<any>(null);
 
 onMounted(async () => {
-  const artistId = route.params.artistId;
-  const response = await fetch(`/artists/${artistId}/discography`);
+  const artistSlug = route.params.artistSlug;
+  const response = await fetch(`http://localhost:4960/artists/${artistSlug}/discography`);
   if (response.ok) {
     const data = await response.json();
     artist.value = data;
@@ -39,6 +39,7 @@ onMounted(async () => {
   font-size: 2.2em;
   font-weight: bold;
   margin-bottom: 32px;
+  color: #fff
 }
 
 .album-list {
@@ -69,5 +70,8 @@ onMounted(async () => {
 .album-title {
   font-size: 1.13em;
   font-weight: 500;
+  color: #60aaff;
 }
+
+
 </style>
