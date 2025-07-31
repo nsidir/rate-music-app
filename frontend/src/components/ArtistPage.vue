@@ -1,29 +1,26 @@
 <template>
+  <HeaderBar v-model:modelValue="searchQuery" />
   <div class="artist-page" v-if="artist">
     <h1 class="artist-title">{{ artist.artist_name }}</h1>
-    <div class="album-list">
-      <div
-        v-for="album in artist.albums"
-        :key="album.album_id"
-        class="album-row"
-      >
-        <img :src="album.cover_url" alt="Album cover" class="album-cover" />
-        <span class="album-title">{{ album.album_name }}</span>
-      </div>
-    </div>
+    <AlbumWall :albums="artist.albums" :searchQuery="searchQuery" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
+import AlbumWall from "./AlbumWall.vue";
+import HeaderBar from "./HeaderBar.vue";
 
 const route = useRoute();
 const artist = ref<any>(null);
+const searchQuery = ref('')
+
+const apiUrl = import.meta.env.VITE_API_URL
 
 onMounted(async () => {
   const artistSlug = route.params.artistSlug;
-  const response = await fetch(`http://localhost:4960/artists/${artistSlug}/discography`);
+  const response = await fetch(`${apiUrl}/artists/${artistSlug}/discography`);
   if (response.ok) {
     const data = await response.json();
     artist.value = data;
@@ -36,11 +33,21 @@ onMounted(async () => {
 
 <style scoped>
 .artist-title {
+  text-align: center;
   font-size: 2.2em;
   font-weight: bold;
+  color: white;
   margin-bottom: 32px;
-  color: #fff
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 8px 16px;
+  border-radius: 6px;
+  max-width: 300px;
+  margin: 0 auto;
 }
+
+
 
 .album-list {
   display: flex;

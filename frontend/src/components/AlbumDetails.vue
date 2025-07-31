@@ -7,8 +7,11 @@
         <img :src="album.cover_url" :alt="album.album_name" class="album-cover" />
         <div class="text-info">
           <h1>{{ album.album_name }}</h1>
-          <h2>{{ album.artist_name }}</h2>
-          
+          <!-- Go to artist page -->
+          <router-link :to="`/artist/${album.artist_slug}`" class="artist-link">
+            <h2>{{ album.artist_name }}</h2>
+          </router-link>
+
           <!-- Community Stats Section -->
           <div class="community-stats">
             <div class="stat-item">
@@ -88,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import StarRating from './StarRating.vue';
 import FavoriteIcon from './FavoriteIcon.vue';
@@ -106,6 +109,7 @@ interface Album {
   cover_url: string;
   avgRating: string | null;
   favoriteCount: number | null;
+  artist_slug: string;
 }
 
 interface Review {
@@ -128,11 +132,6 @@ const reviewSuccess = ref('');
 const userRating = ref<number>(0); 
 const isFavorite = ref(false);
 const userHasReview = ref(false);
-
-// Computed property to check if user has a review
-const userHasExistingReview = computed(() => {
-  return userHasReview.value || newReview.value.trim() !== '';
-});
 
 // Helper function to fetch/refresh album data
 async function fetchAlbumData() {

@@ -182,17 +182,17 @@ app.get('/api/user/albums/:albumId/status', AuthMiddleware.authenticateJWT, asyn
 });
 
 
-app.get('/artists/:slug/discography', async (req, res) => {
+app.get('/api/artists/:slug/discography', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const slug = req.params.slug;
-    // Use your artistController (already set up above!)
     const artist = await artistController.getArtistBySlug(slug);
     if (!artist) {
-      return res.status(404).json({ error: "Artist not found" });
+      res.status(404).json({ error: "Artist not found" });
+      return;
     }
     res.json(artist);
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    next(error);
   }
 });
 

@@ -53,6 +53,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         artist_id: albumsTable.artist_id,
         cover_url: albumsTable.cover_url,
         artist_name: artistsTable.artist_name,
+        artist_slug: artistsTable.artist_slug,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
