@@ -127,6 +127,11 @@ app.get('/api/albums/:id', (req, res, next) => {
 
 // --- Authenticated Routes ---
 
+// Verify token
+app.get('/api/auth/verify', AuthMiddleware.authenticateJWT, (req, res, next) => {
+  authController.verifyToken(req as AuthenticatedRequest, res).catch(next);
+});
+
 //If admin wants to add an album
 app.post('/api/albums', AuthMiddleware.authenticateJWT, authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {

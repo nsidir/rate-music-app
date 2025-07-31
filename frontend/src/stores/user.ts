@@ -35,32 +35,32 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function checkAuth() {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   if (!token) {
-    logout()
-    return false
+    logout();
+    return false;
   }
-
+  
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-
-    if (payload.exp * 1000 < Date.now()) {
-      console.log('Token expired')
-      logout()
-      return false
+    // Verify token with backend
+    const response = await fetch(`${apiUrl}/auth/verify`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      logout();
+      return false;
     }
-
-    // ✅ Pass username to fetchUserProfile
-    if (!user.value) {
-      await fetchUserProfile(payload.username)
-    }
-
-    return true
+    
+    const userData = await response.json();
+    login(userData.user, token); // Update user data and maintain token
+    return true;
   } catch (error) {
-    console.error('Invalid token:', error)
-    logout()
-    return false
+    console.error('Auth verification failed:', error);
+    logout();
+    return false;
   }
 }
 

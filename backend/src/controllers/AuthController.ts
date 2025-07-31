@@ -3,6 +3,7 @@ import { injectable, inject } from 'tsyringe';
 import { Request, Response } from 'express';
 import { UserController } from './UserController';
 import jwt from 'jsonwebtoken';
+import { AuthenticatedRequest } from 'src/middleware/AuthMiddleware';
 
 @injectable()
 export class AuthController {
@@ -64,4 +65,20 @@ export class AuthController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async verifyToken(req: AuthenticatedRequest, res: Response) {
+  try {
+    // If middleware passed, token is valid
+    return res.status(200).json({ 
+      user: { 
+        id: req.user.id, 
+        username: req.user.username,
+        role_name: req.user.role_name 
+      } 
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
 }
