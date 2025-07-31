@@ -12,6 +12,10 @@ import { useRoute } from "vue-router";
 import AlbumWall from "./AlbumWall.vue";
 import HeaderBar from "./HeaderBar.vue";
 
+defineOptions({
+  inheritAttrs: false
+})
+
 const route = useRoute();
 const artist = ref<any>(null);
 const searchQuery = ref('')

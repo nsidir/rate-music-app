@@ -6,6 +6,7 @@ import Login from '../components/Login.vue'
 import Signup from '../components/Signup.vue'
 import Profile from '../components/Profile.vue'
 import TopAlbums from '../components/TopAlbums.vue'
+import ArtistPage from '../components/ArtistPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -47,7 +48,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/artist/:artistSlug',
     name: 'ArtistPage',
-    component: () => import('../components/ArtistPage.vue'),
+    component: ArtistPage,
     props: true
   }
 ]

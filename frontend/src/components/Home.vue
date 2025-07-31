@@ -27,7 +27,7 @@ const albums = ref<Album[]>([])
 
 onMounted(async () => {
   try {
-    const response = await fetch(`${apiUrl}/albums`)
+    const response = await fetch(`${apiUrl}/album-stats`)
     if (response.ok) {
       albums.value = await response.json()
     }
