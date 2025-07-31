@@ -6,6 +6,7 @@ import { artistsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import { albumsTable } from "../db/schema";
+import { toSlug } from '../utility/toSlug';
 
 @injectable()
 export class ArtistService implements IEntityService<Artist, CreateArtist> {
@@ -13,7 +14,9 @@ export class ArtistService implements IEntityService<Artist, CreateArtist> {
   constructor(@inject(DatabaseService) private dbService: DatabaseService) {}
 
   async create(data: CreateArtist): Promise<Artist> {
-    const [insertedArtist] = await this.dbService.getDb().insert(artistsTable).values(data).returning();
+    // Generate a slug from the artist name
+    const artist_slug = toSlug(data.artist_name);
+    const [insertedArtist] = await this.dbService.getDb().insert(artistsTable).values({ ...data, artist_slug }).returning();
     return insertedArtist;
   }
 

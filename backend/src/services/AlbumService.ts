@@ -6,13 +6,15 @@ import { albumsTable, artistsTable, usersToAlbumsTable, usersTable } from "../db
 import { eq, and, avg, count, sql, isNotNull, desc } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import { searchAlbumCover, searchAlbumsByKeyword } from './MusicBrainzService';
+import { toSlug } from '../utility/toSlug';
 
 @injectable()
 export class AlbumService implements IEntityService<Album, CreateAlbum> {
   constructor(@inject(DatabaseService) private dbService: DatabaseService) {}
 
   async create(data: CreateAlbum): Promise<Album> {
-    const [insertedAlbum] = await this.dbService.getDb().insert(albumsTable).values(data).returning();
+    const album_slug = toSlug(data.album_name);
+    const [insertedAlbum] = await this.dbService.getDb().insert(albumsTable).values({ ...data, album_slug }).returning();
     return insertedAlbum;
   }
 
@@ -22,7 +24,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       album_name: albumsTable.album_name,
       artist_id: albumsTable.artist_id,
       cover_url: albumsTable.cover_url,
-      artist_name: artistsTable.artist_name,
+      album_slug: albumsTable.album_slug,
     })
     .from(albumsTable)
     .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
@@ -109,6 +111,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         album_name: albumsTable.album_name,
         artist_id: albumsTable.artist_id,
         cover_url: albumsTable.cover_url,
+        album_slug: albumsTable.album_slug,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -153,6 +156,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
           album_name: albumName,
           artist_id: 0, // No associated artist record in DB yet
           cover_url: coverUrl,
+          album_slug: toSlug(albumName),
           // You can include additional joined info like artist_name if your Album type expects it.
           artist_name: artistName,
         } as Album;
