@@ -2,12 +2,17 @@ import { sql } from "drizzle-orm";
 import { integer, pgTable, primaryKey, varchar, check, boolean, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+export const rolesTable = pgTable("roles", {
+  role_name: varchar({ length: 50 }).primaryKey().notNull(),
+});
+
 // Users table
 export const usersTable = pgTable("users", {
   user_id: integer().primaryKey().generatedAlwaysAsIdentity(),
   username: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
+  role_name: varchar({ length: 50 }).notNull().references(() => rolesTable.role_name, { onDelete: "cascade" }),
 });
 
 // Artists table
@@ -48,6 +53,11 @@ export const usersToAlbumsTable = pgTable(
     ratingCheck: check("rating_check", sql`${table.rating} >= 1 AND ${table.rating} <= 5`), // Check constraint for rating between 1 and 5
   })
 );
+
+// Relations for roles
+export const rolesRelations = relations(rolesTable, ({ many }) => ({
+  users: many(usersTable),
+}));
 
 // Relations for users
 export const usersRelations = relations(usersTable, ({ many }) => ({

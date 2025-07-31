@@ -3,7 +3,7 @@ import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { Artist, CreateArtist } from "../types";
 import { artistsTable } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import { albumsTable } from "../db/schema";
 import { toSlug } from '../utility/toSlug';
@@ -22,6 +22,13 @@ export class ArtistService implements IEntityService<Artist, CreateArtist> {
 
   async getAll(): Promise<Artist[]> {
     return await this.dbService.getDb().select().from(artistsTable);
+  }
+
+  async exists(artistName: string): Promise<boolean> {
+    const slug = toSlug(artistName);
+    const [artist] = await this.dbService.getDb().select().from(artistsTable
+    ).where(ilike(artistsTable.artist_slug, slug));
+    return !!artist;
   }
 
   async getById(id: number): Promise<Artist | null> {

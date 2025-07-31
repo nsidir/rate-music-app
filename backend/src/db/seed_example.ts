@@ -8,10 +8,13 @@ import { fileURLToPath } from 'url';
 import { UserController } from '../controllers/UserController';
 import { AlbumController } from '../controllers/AlbumController';
 import { ArtistController } from '../controllers/ArtistController';
+import { RoleController } from '../controllers/RoleController';
 import { DatabaseService } from '../services/DatabaseService';
 import { UserService } from '../services/UserService';
 import { AlbumService } from '../services/AlbumService';
 import { ArtistService } from '../services/ArtistService';
+import { RoleService } from '../services/RoleService';
+ 
 import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment } from '../types';
 
 // Setup __dirname in ESM
@@ -25,6 +28,7 @@ container.registerSingleton(DatabaseService);
 container.register(UserService, { useClass: UserService });
 container.register(AlbumService, { useClass: AlbumService });
 container.register(ArtistService, { useClass: ArtistService });
+container.register(RoleService, { useClass: RoleService });
 
 interface SeedResult {
     createdUsers: Array<{ user_id: number; username: string; email: string }>;
@@ -74,8 +78,16 @@ async function seedDatabase(): Promise<SeedResult> {
     const userController = container.resolve(UserController);
     const albumController = container.resolve(AlbumController);
     const artistController = container.resolve(ArtistController);
+    const roleController = container.resolve(RoleController);
 
     try {
+        console.log('--- Role Setup ---');
+        // Ensure roles exist
+        const rolesToInsert = ['admin', 'user'];
+        for (const role of rolesToInsert) {
+            roleController.createRole(role);
+        }
+
         console.log('--- Artist Operations ---');
         const artistNames = Object.keys(albumData);
         const createdArtists = await Promise.all(
@@ -85,10 +97,11 @@ async function seedDatabase(): Promise<SeedResult> {
 
         console.log('--- User Operations ---');
         const usersToCreate: CreateUser[] = [
-            { username: 'JohnDoe', password: 'password1', email: 'john@example.com' },
-            { username: 'JaneDoe', password: 'password2', email: 'jane@example.com' },
-            { username: 'Alice', password: 'password3', email: 'alice@example.com' },
-            { username: 'h1den', password: 'h1den123', email: 'h1den@example.com' }
+            { username: 'Admin', password: 'admin123', email: 'admin@example.com', role_name: 'admin' },
+            { username: 'JohnDoe', password: 'password1', email: 'john@example.com', role_name: 'user' },
+            { username: 'JaneDoe', password: 'password2', email: 'jane@example.com', role_name: 'user' },
+            { username: 'Alice', password: 'password3', email: 'alice@example.com', role_name: 'user' },
+            { username: 'h1den', password: 'h1den123', email: 'h1den@example.com', role_name: 'user' }
         ];
         const createdUsers = await Promise.all(
             usersToCreate.map(user => userController.createUser(user))

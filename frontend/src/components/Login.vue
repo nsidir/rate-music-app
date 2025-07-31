@@ -128,7 +128,8 @@ const handleLogin = async () => {
     userStore.login({
       id: data.user.id,
       username: data.user.username,
-      email: data.user.email
+      email: data.user.email,
+      role_name: data.user.role_name,
     })
     router.push('/')
   } catch (error) {

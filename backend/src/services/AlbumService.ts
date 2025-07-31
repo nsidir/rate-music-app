@@ -18,6 +18,40 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
     return insertedAlbum;
   }
 
+  async createWithArtistName(data: Omit<CreateAlbum, 'artist_id'> & { artist_name: string }): Promise<Album> {
+    const db = this.dbService.getDb();
+
+    // if artist exists
+    let [artist] = await db
+      .select()
+      .from(artistsTable)
+      .where(eq(artistsTable.artist_name, data.artist_name));
+
+    // if artist doesn't exist, insert
+    if (!artist) {
+      const artist_slug = toSlug(data.artist_name);
+      [artist] = await db.insert(artistsTable)
+        .values({
+          artist_name: data.artist_name,
+          artist_slug,
+        })
+        .returning();
+    }
+
+    // insert the album using artist_id
+    const album_slug = toSlug(data.album_name);
+    const [insertedAlbum] = await db.insert(albumsTable)
+      .values({
+        album_name: data.album_name,
+        cover_url: data.cover_url,
+        album_slug,
+        artist_id: artist.artist_id,
+      })
+      .returning();
+
+    return insertedAlbum;
+  }
+
   async getAll(): Promise<Album[]> {
     return await this.dbService.getDb().select({
       album_id: albumsTable.album_id,

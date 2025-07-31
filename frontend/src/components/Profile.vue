@@ -81,7 +81,7 @@ interface UserProfile {
 }
 
 const profile = ref<UserProfile>({
-  user: { id: 0, username: '', email: '' },
+  user: { id: 0, username: '', email: '', role_name: 'user' },
   favorites: [],
   ratings: []
 })

@@ -14,6 +14,10 @@ app.use(router).use(pinia)
 
 // Check for token expiration before mounting the app
 const userStore = useUserStore();
-userStore.checkAuth();
+const isAuth = await userStore.checkAuth();
+
+console.log('Is user authenticated:', isAuth);
 
 app.mount('#app')
+
+userStore.initialize().catch(console.error)

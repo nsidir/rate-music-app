@@ -23,7 +23,8 @@ export class AuthController {
       const newUser = await this.userController.createUser({ 
         username, 
         password, // Pass plain password, UserService will hash it
-        email 
+        email,
+        role_name: 'user' // Default to user role
       });
 
       return res.status(201).json({ message: 'User created', user: newUser });
@@ -48,7 +49,7 @@ export class AuthController {
 
       // Generate JWT token
       const token = jwt.sign(
-        { id: user.user_id, username: user.username },
+        { id: user.user_id, username: user.username, role_name: user.role_name },
         process.env.VITE_JWT_SECRET || 'supersecretkey',
         { expiresIn: '24h' }
       );
@@ -56,7 +57,7 @@ export class AuthController {
       return res.status(200).json({ 
         message: 'Login successful', 
         token, 
-        user: { id: user.user_id, username: user.username }
+        user: { id: user.user_id, username: user.username, role_name: user.role_name }
       });
     } catch (error) {
       console.error('Error during login:', error);

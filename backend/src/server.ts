@@ -15,7 +15,7 @@ import { DatabaseService } from './services/DatabaseService';
 import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
-import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddleware';
+import { AuthenticatedRequest, AuthMiddleware, authorizeRole } from './middleware/AuthMiddleware';
 
 // Environment setup
 const __filename = fileURLToPath(import.meta.url);
@@ -52,6 +52,33 @@ app.post('/api/signup', (req, res, next) => {
 app.post('/api/login', (req, res, next) => {
     authController.login(req, res).catch(next);
 });
+
+//Artists
+app.get('/api/artists', async (req, res, next) => {
+    try {
+        const artists = await artistController.getAllArtists();
+        res.json(artists);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Check if an artist exists and if not, create it, if it exists, return the artist id
+app.get('/api/artists/exists/:artistName', (req, res, next) => {
+    const artistName = req.params.artistName;
+    artistController.artistExists(artistName)
+        .then(async exists => {
+            if (exists) {
+                const artist = await artistController.getArtistBySlug(artistName);
+                return res.json({ exists: true, artist });
+            } else {
+                const newArtist = await artistController.createArtist({ artist_name: artistName });
+                return res.json({ exists: false, artist: newArtist });
+            }
+        })
+        .catch(next);
+});
+
 
 // Albums
 app.get('/api/albums', (req, res, next) => {
@@ -99,6 +126,17 @@ app.get('/api/albums/:id', (req, res, next) => {
 
 
 // --- Authenticated Routes ---
+
+//If admin wants to add an album
+app.post('/api/albums', AuthMiddleware.authenticateJWT, authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const albumData = req.body;
+        const newAlbum = await albumController.createAlbum(albumData);
+        res.status(201).json(newAlbum);
+    } catch (error) {
+        next(error);
+    }
+});
 
 // Add/update a review for an album
 app.post('/api/albums/:id/reviews', AuthMiddleware.authenticateJWT, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
