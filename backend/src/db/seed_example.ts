@@ -37,39 +37,54 @@ interface SeedResult {
 }
 
 // Central album data
-const albumData: Record<string, Array<{ album_name: string; cover_url: string }>> = {
+// Define a type for album seed data that omits artist_id
+type AlbumSeed = Omit<CreateAlbum, 'artist_id'>;
+
+const albumData: Record<string, Array<AlbumSeed>> = {
     'The Beatles': [
         {
             album_name: 'Abbey Road',
             cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25',
+            year: 1969,
+            genre: 'Rock',
         },
     ],
     'The Rolling Stones': [
         {
             album_name: 'Sticky Fingers',
             cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg',
+            year: 1971,
+            genre: 'Rock',
         },
     ],
     'The Doors': [
         {
             album_name: 'L.A. Woman',
             cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg',
+            year: 1971,
+            genre: 'Psychedelic Rock',
         },
     ],
     'Led Zeppelin': [
         {
             album_name: 'Led Zeppelin IV',
             cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee',
+            year: 1971,
+            genre: 'Hard Rock',
         },
     ],
     'Black Sabbath': [
         {
             album_name: 'Paranoid',
             cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5',
+            year: 1970,
+            genre: 'Heavy Metal',
         },
         {
             album_name: 'Master of Reality',
             cover_url: 'https://e.snmc.io/i/600/w/917829d5a491f497ac79f5031d3870eb/2918156/black-sabbath-master-of-reality-Cover-Art.jpg',
+            year: 1971,
+            genre: 'Heavy Metal',
         },
     ],
 };

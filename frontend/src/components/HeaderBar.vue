@@ -34,7 +34,7 @@
   
   <!-- Insert Album Modal -->
   <Teleport to="body">
-    <div v-if="showInsertModal" class="modal-overlay" @click="closeModal">
+    <div v-if="showInsertModal" class="modal-overlay">
       <div class="modal" @click.stop>
         <div class="modal-header">
           <h2>Insert New Album</h2>
@@ -71,6 +71,27 @@
               :disabled="isSubmitting"
             />
           </div>
+          <div class="form-group">
+            <label for="year">Year *</label>
+            <input 
+              id="year"
+              type="number"
+              v-model.number="albumForm.year" 
+              placeholder="Release year" 
+              min="1890" 
+              :max="currentYear" 
+              :disabled="isSubmitting"
+            />
+          </div>
+          <div class="form-group">
+            <label for="genre">Genre *</label>
+            <input 
+              id="genre"
+              v-model="albumForm.genre" 
+              placeholder="Genre" 
+              :disabled="isSubmitting"
+            />
+          </div>
           <div class="modal-actions">
             <button type="submit" :disabled="isSubmitting" class="submit-btn">
               {{ isSubmitting ? 'Submitting...' : 'Submit' }}
@@ -97,8 +118,6 @@ const router = useRouter()
 
 const isLoggedIn = computed(() => userStore.loggedIn)
 const isAdmin = computed(() => userStore.user?.role_name === 'admin')
-
-console.log('User data:', userStore.user)
 
 // Search input handling
 const props = defineProps({
@@ -129,13 +148,19 @@ interface AlbumForm {
   album_name: string
   artist_name: string
   cover_url: string
+  year: number
+  genre: string
 }
 
 const albumForm = reactive<AlbumForm>({
   album_name: '',
   artist_name: '',
-  cover_url: ''
+  cover_url: '',
+  year: 1969,
+  genre: ''
 })
+
+const currentYear = new Date().getFullYear()
 
 const insertAlbum = () => {
   showInsertModal.value = true
@@ -152,13 +177,17 @@ const resetForm = () => {
   Object.assign(albumForm, {
     album_name: '',
     artist_name: '',
-    cover_url: ''
+    cover_url: '',
+    year: 1969,
+    genre: ''
   })
 }
 
-// 🚀 Fetch or create artist before inserting album
+// Fetch or create artist before inserting album
 const getOrCreateArtist = async (artistName: string) => {
-  const encodedName = encodeURIComponent(artistName.trim())
+  const encodedName = await fetch(`${apiUrl}/slug/${artistName}`)
+    .then(res => res.json())
+    .then(data => data.slug)
   const res = await fetch(`${apiUrl}/artists/exists/${encodedName}`)
 
   if (!res.ok) {
@@ -182,7 +211,7 @@ const submitAlbum = async () => {
       return
     }
 
-    const { album_name, artist_name, cover_url } = albumForm
+    const { album_name, artist_name, cover_url, year, genre } = albumForm
 
     if (!album_name.trim() || !artist_name.trim() || !cover_url.trim()) {
       alert('Please fill in all required fields.')
@@ -202,7 +231,9 @@ const submitAlbum = async () => {
       body: JSON.stringify({
         album_name: album_name.trim(),
         artist_id: artistId,
-        cover_url: cover_url.trim()
+        cover_url: cover_url.trim(),
+        year: year,
+        genre: genre.trim() || 'Unknown'
       })
     })
 
@@ -358,7 +389,7 @@ button.insert-album:hover {
 }
 
 .modal {
-  background: #2a2a2a;
+  background: #0a1527;
   border-radius: 12px;
   padding: 0;
   min-width: 400px;

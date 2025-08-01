@@ -16,6 +16,7 @@ import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
 import { AuthenticatedRequest, AuthMiddleware, authorizeRole } from './middleware/AuthMiddleware';
+import { toSlug } from './utility/toSlug';
 
 // Environment setup
 const __filename = fileURLToPath(import.meta.url);
@@ -96,6 +97,13 @@ app.get('/api/album-stats', (req, res, next) => {
 // Search for an album
 app.get('/api/albums/search', (req, res, next) => {
     albumController.searchAlbum(req, res, next).catch(next);
+});
+
+// Convert name to slug
+app.get('/api/slug/:name', (req, res, next) => {
+    const name = req.params.name;
+    const slug = toSlug(name);
+    res.json({ slug });
 });
 
 

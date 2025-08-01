@@ -46,6 +46,8 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: data.cover_url,
         album_slug,
         artist_id: artist.artist_id,
+        year: data.year,
+        genre: data.genre,
       })
       .returning();
 
@@ -59,6 +61,8 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       artist_id: albumsTable.artist_id,
       cover_url: albumsTable.cover_url,
       album_slug: albumsTable.album_slug,
+      year: albumsTable.year,
+      genre: albumsTable.genre,
     })
     .from(albumsTable)
     .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
@@ -90,6 +94,9 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         artist_name: artistsTable.artist_name,
         artist_slug: artistsTable.artist_slug,
+        album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+        genre: albumsTable.genre,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -121,6 +128,9 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         album_name: albumsTable.album_name,
         artist_name: artistsTable.artist_name,
         cover_url: albumsTable.cover_url,
+        album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+        genre: albumsTable.genre,
         avgRating: avg(usersToAlbumsTable.rating),
         ratingCount: count(usersToAlbumsTable.rating),
       })
@@ -146,6 +156,8 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         artist_id: albumsTable.artist_id,
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+        genre: albumsTable.genre,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -167,6 +179,8 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
       const albumName: string = release.title;
       const artistCredit = release["artist-credit"];
+      const year: number = release.date ? new Date(release.date).getFullYear() : new Date().getFullYear();
+      const genre = release.year ? "Unknown" : "Various"; // Placeholder, as MusicBrainz doesn't always provide genre
       const artistName: string | null =
         Array.isArray(artistCredit) && artistCredit.length > 0
           ? artistCredit[0].name
@@ -193,6 +207,8 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
           album_slug: toSlug(albumName),
           // You can include additional joined info like artist_name if your Album type expects it.
           artist_name: artistName,
+          year: year,
+          genre: genre,
         } as Album;
       }
       albums.push(album);

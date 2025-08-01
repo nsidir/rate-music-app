@@ -23,15 +23,26 @@ export const artistsTable = pgTable("artists", {
 });
 
 // Albums table
-export const albumsTable = pgTable("albums", {
-  album_id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  album_name: varchar({ length: 255 }).notNull(),
-  artist_id: integer("artist_id")
-    .notNull()
-    .references(() => artistsTable.artist_id),
-  cover_url: varchar({ length: 255 }).notNull(),
-  album_slug: varchar({ length: 255 }).notNull().unique(),
-});
+export const albumsTable = pgTable(
+  "albums",
+  {
+    album_id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    album_name: varchar({ length: 255 }).notNull(),
+    artist_id: integer("artist_id")
+      .notNull()
+      .references(() => artistsTable.artist_id),
+    cover_url: varchar({ length: 255 }).notNull(),
+    album_slug: varchar({ length: 255 }).notNull().unique(),
+    year: integer("year").notNull(),
+    genre: varchar({ length: 100 }).notNull(),
+  },
+  (table) => ({
+    yearCheck: check(
+      "year_check",
+      sql`${table.year} >= 1890 AND ${table.year} <= ${new Date().getFullYear()}`
+    ),
+  })
+);
 
 // Junction table with rating and check constraint
 export const usersToAlbumsTable = pgTable(

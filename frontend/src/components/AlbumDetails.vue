@@ -12,6 +12,18 @@
             <h2>{{ album.artist_name }}</h2>
           </router-link>
 
+          <!-- Album Info Section -->
+          <div class="album-info">
+            <div class="info-item" v-if="album.year">
+              <span class="info-label">Year: </span>
+              <span class="info-value">{{ album.year }}</span>
+            </div>
+            <div class="info-item" v-if="album.genre">
+              <span class="info-label">Genre: </span>
+              <span class="info-value">{{ album.genre }}</span>
+            </div>
+          </div>
+
           <!-- Community Stats Section -->
           <div class="community-stats">
             <div class="stat-item">
@@ -110,6 +122,8 @@ interface Album {
   avgRating: string | null;
   favoriteCount: number | null;
   artist_slug: string;
+  year: number;
+  genre: string;
 }
 
 interface Review {
@@ -350,6 +364,18 @@ const toggleFavorite = () => {
   display: flex;
   flex-direction: row;
   gap: 30px;
+}
+
+.album-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding-bottom: 10px;
+}
+
+.info-item {
+  font-size: 1.2em;
 }
 
 .album-cover {
