@@ -76,6 +76,22 @@ export const genresTable = pgTable('genres', {
   imageUrl: varchar('cover_url', { length: 500 }),
 })
 
+// TODO 
+export const albumsToGenresTable = pgTable(
+  'albums_to_genres',
+  {
+    album_id: integer('album_id')
+      .notNull()
+      .references(() => albumsTable.album_id, { onDelete: "cascade" }),
+    genre_id: integer('genre_id')
+      .notNull()
+      .references(() => genresTable.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.album_id, table.genre_id] }),
+  })
+);
+
 export const genresToSubgenresTable = pgTable(
   'genres_to_subgenres',
   {
@@ -97,6 +113,11 @@ export const genresRelations = relations(genresTable, ({ many }) => ({
   }),
 }));
 
+// TODO 
+export const albumsToGenresRelations = relations(albumsToGenresTable, ({ many }) => ({
+  albums: many(albumsTable),
+  genres: many(genresTable),
+}));
 
 // Relations for roles
 export const rolesRelations = relations(rolesTable, ({ many }) => ({

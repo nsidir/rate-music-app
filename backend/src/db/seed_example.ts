@@ -43,13 +43,13 @@ interface SeedResult {
 // Define a type for album seed data that omits artist_id
 type AlbumSeed = Omit<CreateAlbum, 'artist_id'>;
 
-async function createGenreIfNotExists(genreController: GenreController, name: string): Promise<Genre> {
+async function createGenreIfNotExists(genreController: GenreController, name: string, description: string, imageUrl: string | null): Promise<Genre> {
     const existingGenre = await genreController.getGenreByName(name);
     if (existingGenre) {
         return existingGenre;
     }
 
-    return genreController.createGenre({ name, description: '', imageUrl: null });
+    return genreController.createGenre({ name, description, imageUrl });
 }
 
 async function seedDatabase(): Promise<SeedResult> {
@@ -63,10 +63,10 @@ async function seedDatabase(): Promise<SeedResult> {
         console.log('--- Genre Setup ---');
 
         // Create all genres and get their IDs
-        const rockGenre = await createGenreIfNotExists(genreController, 'Rock');
-        const heavyMetalGenre = await createGenreIfNotExists(genreController, 'Heavy Metal');
-        const psychedelicRockGenre = await createGenreIfNotExists(genreController, 'Psychedelic Rock');
-        const hardRockGenre = await createGenreIfNotExists(genreController, 'Hard Rock');
+        const rockGenre = await createGenreIfNotExists(genreController, 'Rock', 'Typically uses a verse-chorus structure with a backbeat rhythm and the electric guitar at the forefront; generally heavier and/or faster than its predecessors.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Rock_music.svg/1200px-Rock_music.svg.png');
+        const heavyMetalGenre = await createGenreIfNotExists(genreController, 'Heavy Metal', 'Characterized by a thick, massive sound, highly amplified distortion, and extended guitar solos.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Heavy_metal_music.svg/1200px-Heavy_metal_music.svg.png');
+        const psychedelicRockGenre = await createGenreIfNotExists(genreController, 'Psychedelic Rock', 'Rock which emerged in the mid-1960s that often attempts to emulate or enhance the effects of psychedelic drugs.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Psychedelic_rock.svg/1200px-Psychedelic_rock.svg.png');
+        const hardRockGenre = await createGenreIfNotExists(genreController, 'Hard Rock', 'Characterized by aggressive vocals, distorted electric guitars, and a strong rhythm section.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Hard_rock_music.svg/1200px-Hard_rock_music.svg.png');
 
         console.log('Created/found genres:', {
             rock: rockGenre.id,
