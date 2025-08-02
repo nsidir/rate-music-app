@@ -75,6 +75,29 @@ export const genresTable = pgTable('genres', {
   description: varchar('description').notNull(),
   imageUrl: varchar('cover_url', { length: 500 }),
 })
+
+export const genresToSubgenresTable = pgTable(
+  'genres_to_subgenres',
+  {
+    genre_id: integer('genre_id')
+      .notNull()
+      .references(() => genresTable.id, { onDelete: "cascade" }),
+    subgenre_id: integer('subgenre_id')
+      .notNull()
+      .references(() => genresTable.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.genre_id, table.subgenre_id] }),
+  })
+);
+
+export const genresRelations = relations(genresTable, ({ many }) => ({
+  subgenres: many(genresToSubgenresTable, {
+    relationName: "subgenres",
+  }),
+}));
+
+
 // Relations for roles
 export const rolesRelations = relations(rolesTable, ({ many }) => ({
   users: many(usersTable),

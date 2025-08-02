@@ -18,9 +18,9 @@
               <span class="info-label">Year: </span>
               <span class="info-value">{{ album.year }}</span>
             </div>
-            <div class="info-item" v-if="album.genre">
+            <div class="info-item" v-if="album.genre_name">
               <span class="info-label">Genre: </span>
-              <span class="info-value">{{ album.genre }}</span>
+              <span class="info-value">{{ album.genre_name }}</span>
             </div>
           </div>
 
@@ -123,7 +123,7 @@ interface Album {
   favoriteCount: number | null;
   artist_slug: string;
   year: number;
-  genre: string;
+  genre_name: string;
 }
 
 interface Review {

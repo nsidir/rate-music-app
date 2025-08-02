@@ -2,11 +2,12 @@
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { Album, CreateAlbum, UserAlbumAssignment } from "../types";
-import { albumsTable, artistsTable, usersToAlbumsTable, usersTable } from "../db/schema";
+import { albumsTable, artistsTable, usersToAlbumsTable, usersTable, genresTable } from "../db/schema";
 import { eq, and, avg, count, sql, isNotNull, desc } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import { searchAlbumCover, searchAlbumsByKeyword } from './MusicBrainzService';
 import { toSlug } from '../utility/toSlug';
+import { g } from "vitest/dist/chunks/suite.d.FvehnV49";
 
 @injectable()
 export class AlbumService implements IEntityService<Album, CreateAlbum> {
@@ -47,7 +48,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         album_slug,
         artist_id: artist.artist_id,
         year: data.year,
-        genre: data.genre,
+        genre_id: data.genre_id,
       })
       .returning();
 
@@ -62,7 +63,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       cover_url: albumsTable.cover_url,
       album_slug: albumsTable.album_slug,
       year: albumsTable.year,
-      genre: albumsTable.genre,
+      genre_id: albumsTable.genre_id,
     })
     .from(albumsTable)
     .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
@@ -96,10 +97,12 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         artist_slug: artistsTable.artist_slug,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre: albumsTable.genre,
+        genre_id: albumsTable.genre_id,
+        genre_name: genresTable.name,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
+      .leftJoin(genresTable, eq(albumsTable.genre_id, genresTable.id))
       .where(eq(albumsTable.album_id, albumId));
 
     if (!albumDetails) {
@@ -130,14 +133,16 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre: albumsTable.genre,
+        genre_id: albumsTable.genre_id,
+        genre_name: genresTable.name,
         avgRating: avg(usersToAlbumsTable.rating),
         ratingCount: count(usersToAlbumsTable.rating),
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
       .leftJoin(usersToAlbumsTable, eq(albumsTable.album_id, usersToAlbumsTable.album_id))
-      .groupBy(albumsTable.album_id, artistsTable.artist_name)
+      .leftJoin(genresTable, eq(albumsTable.genre_id, genresTable.id))
+      .groupBy(albumsTable.album_id, artistsTable.artist_name, genresTable.name)
       .orderBy(desc(sql`(${avg(usersToAlbumsTable.rating)})`));
 
     return albumsWithStats.map(album => ({
@@ -157,7 +162,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre: albumsTable.genre,
+        genre_id: albumsTable.genre_id,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -169,52 +174,52 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
   // This function returns up to 10 album objects matching the keyword,
   // including cover art obtained via the external API.
   // It does NOT insert albums into the database.
-  async searchAlbumsInfo(keyword: string): Promise<Album[]> {
-    const db = this.dbService.getDb();
-    // Call the MusicBrainz API to search for albums matching the keyword
-    const releases = await searchAlbumsByKeyword(keyword);
-    const albums: Album[] = [];
+  // async searchAlbumsInfo(keyword: string): Promise<Album[]> {
+  //   const db = this.dbService.getDb();
+  //   // Call the MusicBrainz API to search for albums matching the keyword
+  //   const releases = await searchAlbumsByKeyword(keyword);
+  //   const albums: Album[] = [];
 
-    for (const release of releases) {
-      // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
-      const albumName: string = release.title;
-      const artistCredit = release["artist-credit"];
-      const year: number = release.date ? new Date(release.date).getFullYear() : new Date().getFullYear();
-      const genre = release.year ? "Unknown" : "Various"; // Placeholder, as MusicBrainz doesn't always provide genre
-      const artistName: string | null =
-        Array.isArray(artistCredit) && artistCredit.length > 0
-          ? artistCredit[0].name
-          : null;
-      if (!albumName || !artistName) continue;
+  //   for (const release of releases) {
+  //     // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
+  //     const albumName: string = release.title;
+  //     const artistCredit = release["artist-credit"];
+  //     const year: number = release.date ? new Date(release.date).getFullYear() : new Date().getFullYear();
+  //     const genre = release.year ? "Unknown" : "Various"; // Placeholder, as MusicBrainz doesn't always provide genre
+  //     const artistName: string | null =
+  //       Array.isArray(artistCredit) && artistCredit.length > 0
+  //         ? artistCredit[0].name
+  //         : null;
+  //     if (!albumName || !artistName) continue;
 
-      // Check if the album already exists in the local cache (database)
-      let album = await this.findAlbumByNameAndArtist(albumName, artistName);
-      if (!album) {
-        // Fetch cover art for this album from the external API
-        const coverUrl = await searchAlbumCover(albumName, artistName);
-        if (!coverUrl) {
-          // If no cover art is found, skip this album
-          continue;
-        }
+  //     // Check if the album already exists in the local cache (database)
+  //     let album = await this.findAlbumByNameAndArtist(albumName, artistName);
+  //     if (!album) {
+  //       // Fetch cover art for this album from the external API
+  //       const coverUrl = await searchAlbumCover(albumName, artistName);
+  //       if (!coverUrl) {
+  //         // If no cover art is found, skip this album
+  //         continue;
+  //       }
 
-        // Instead of inserting the album into the DB,
-        // create a temporary album object with dummy IDs (e.g., album_id and artist_id set to 0)
-        album = {
-          album_id: 0, // Indicates not persisted in DB
-          album_name: albumName,
-          artist_id: 0, // No associated artist record in DB yet
-          cover_url: coverUrl,
-          album_slug: toSlug(albumName),
-          // You can include additional joined info like artist_name if your Album type expects it.
-          artist_name: artistName,
-          year: year,
-          genre: genre,
-        } as Album;
-      }
-      albums.push(album);
-    }
-    return albums;
-  }
+  //       // Instead of inserting the album into the DB,
+  //       // create a temporary album object with dummy IDs (e.g., album_id and artist_id set to 0)
+  //       album = {
+  //         album_id: 0, // Indicates not persisted in DB
+  //         album_name: albumName,
+  //         artist_id: 0, // No associated artist record in DB yet
+  //         cover_url: coverUrl,
+  //         album_slug: toSlug(albumName),
+  //         // You can include additional joined info like artist_name if your Album type expects it.
+  //         artist_name: artistName,
+  //         year: year,
+  //         genre_id: genre,
+  //       } as Album;
+  //     }
+  //     albums.push(album);
+  //   }
+  //   return albums;
+  // }
 
   // Get all reviews for a specific album
   async getAlbumReviews(albumId: number): Promise<any[]> {

@@ -3,10 +3,6 @@ import { injectable, inject } from "tsyringe";
 import { ArtistService } from "../services/ArtistService";
 import { Artist, CreateArtist } from "../types";
 
-
-
-
-
 @injectable()
 export class ArtistController {
   constructor(@inject(ArtistService) private artistService: ArtistService) {}

@@ -9,13 +9,15 @@ import { UserController } from '../controllers/UserController';
 import { AlbumController } from '../controllers/AlbumController';
 import { ArtistController } from '../controllers/ArtistController';
 import { RoleController } from '../controllers/RoleController';
+import { GenreController } from '../controllers/GenreController';
 import { DatabaseService } from '../services/DatabaseService';
 import { UserService } from '../services/UserService';
 import { AlbumService } from '../services/AlbumService';
 import { ArtistService } from '../services/ArtistService';
 import { RoleService } from '../services/RoleService';
- 
-import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment } from '../types';
+import { GenreService } from '../services/GenreService';
+
+import { CreateUser, CreateAlbum, CreateArtist, UserAlbumAssignment, Genre, CreateGenre } from '../types';
 
 // Setup __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -29,78 +31,105 @@ container.register(UserService, { useClass: UserService });
 container.register(AlbumService, { useClass: AlbumService });
 container.register(ArtistService, { useClass: ArtistService });
 container.register(RoleService, { useClass: RoleService });
+container.register(GenreService, { useClass: GenreService });
 
 interface SeedResult {
     createdUsers: Array<{ user_id: number; username: string; email: string }>;
     createdAlbums: Array<{ album_id: number; album_name: string; artist_id: number }>;
     createdArtists: Array<{ artist_id: number; artist_name: string; artist_slug: string }>;
+    createdGenres: Genre[];
 }
 
-// Central album data
 // Define a type for album seed data that omits artist_id
 type AlbumSeed = Omit<CreateAlbum, 'artist_id'>;
 
-const albumData: Record<string, Array<AlbumSeed>> = {
-    'The Beatles': [
-        {
-            album_name: 'Abbey Road',
-            cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25',
-            year: 1969,
-            genre: 'Rock',
-        },
-    ],
-    'The Rolling Stones': [
-        {
-            album_name: 'Sticky Fingers',
-            cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg',
-            year: 1971,
-            genre: 'Rock',
-        },
-    ],
-    'The Doors': [
-        {
-            album_name: 'L.A. Woman',
-            cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg',
-            year: 1971,
-            genre: 'Psychedelic Rock',
-        },
-    ],
-    'Led Zeppelin': [
-        {
-            album_name: 'Led Zeppelin IV',
-            cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee',
-            year: 1971,
-            genre: 'Hard Rock',
-        },
-    ],
-    'Black Sabbath': [
-        {
-            album_name: 'Paranoid',
-            cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5',
-            year: 1970,
-            genre: 'Heavy Metal',
-        },
-        {
-            album_name: 'Master of Reality',
-            cover_url: 'https://e.snmc.io/i/600/w/917829d5a491f497ac79f5031d3870eb/2918156/black-sabbath-master-of-reality-Cover-Art.jpg',
-            year: 1971,
-            genre: 'Heavy Metal',
-        },
-    ],
-};
+async function createGenreIfNotExists(genreController: GenreController, name: string): Promise<Genre> {
+    const existingGenre = await genreController.getGenreByName(name);
+    if (existingGenre) {
+        return existingGenre;
+    }
+
+    return genreController.createGenre({ name, description: '', imageUrl: null });
+}
 
 async function seedDatabase(): Promise<SeedResult> {
     const userController = container.resolve(UserController);
     const albumController = container.resolve(AlbumController);
     const artistController = container.resolve(ArtistController);
     const roleController = container.resolve(RoleController);
+    const genreController = container.resolve(GenreController);
 
     try {
+        console.log('--- Genre Setup ---');
+
+        // Create all genres and get their IDs
+        const rockGenre = await createGenreIfNotExists(genreController, 'Rock');
+        const heavyMetalGenre = await createGenreIfNotExists(genreController, 'Heavy Metal');
+        const psychedelicRockGenre = await createGenreIfNotExists(genreController, 'Psychedelic Rock');
+        const hardRockGenre = await createGenreIfNotExists(genreController, 'Hard Rock');
+
+        console.log('Created/found genres:', {
+            rock: rockGenre.id,
+            heavyMetal: heavyMetalGenre.id,
+            psychedelicRock: psychedelicRockGenre.id,
+            hardRock: hardRockGenre.id
+        });
+
+        // Now define album data with actual genre IDs
+        const albumData: Record<string, Array<AlbumSeed>> = {
+            'The Beatles': [
+                {
+                    album_name: 'Abbey Road',
+                    cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25',
+                    year: 1969,
+                    genre_id: rockGenre.id,
+                },
+            ],
+            'The Rolling Stones': [
+                {
+                    album_name: 'Sticky Fingers',
+                    cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg',
+                    year: 1971,
+                    genre_id: rockGenre.id,
+                },
+            ],
+            'The Doors': [
+                {
+                    album_name: 'L.A. Woman',
+                    cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg',
+                    year: 1971,
+                    genre_id: psychedelicRockGenre.id,
+                },
+            ],
+            'Led Zeppelin': [
+                {
+                    album_name: 'Led Zeppelin IV',
+                    cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee',
+                    year: 1971,
+                    genre_id: hardRockGenre.id,
+                },
+            ],
+            'Black Sabbath': [
+                {
+                    album_name: 'Paranoid',
+                    cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5',
+                    year: 1970,
+                    genre_id: heavyMetalGenre.id,
+                },
+                {
+                    album_name: 'Master of Reality',
+                    cover_url: 'https://e.snmc.io/i/600/w/917829d5a491f497ac79f5031d3870eb/2918156/black-sabbath-master-of-reality-Cover-Art.jpg',
+                    year: 1971,
+                    genre_id: heavyMetalGenre.id,
+                },
+            ],
+        };
+
         console.log('--- Role Setup ---');
         // Ensure roles exist
         const rolesToInsert = ['admin', 'user'];
         for (const role of rolesToInsert) {
-            roleController.createRole(role);
+            await roleController.createRole(role);
         }
 
         console.log('--- Artist Operations ---');
@@ -138,9 +167,38 @@ async function seedDatabase(): Promise<SeedResult> {
         );
         console.log('Inserted albums:', createdAlbums);
 
-        return { createdUsers, createdAlbums, createdArtists };
+        return { createdUsers, createdAlbums, createdArtists, createdGenres: [
+            rockGenre, heavyMetalGenre, psychedelicRockGenre, hardRockGenre
+        ] };
     } catch (error) {
         console.error('Error in seedDatabase:', error);
+        throw error;
+    }
+}
+
+async function assignSubgenres(
+    genreController: GenreController,
+    { createdGenres }: { createdGenres: Genre[] }
+): Promise<void> {
+    try {
+        console.log('--- Assigning Subgenres ---');
+
+        const rockGenre = createdGenres.find(g => g.name === 'Rock');
+        const heavyMetalGenre = createdGenres.find(g => g.name === 'Heavy Metal');
+        const psychedelicRockGenre = createdGenres.find(g => g.name === 'Psychedelic Rock');
+        const hardRockGenre = createdGenres.find(g => g.name === 'Hard Rock');
+
+        if (!rockGenre || !heavyMetalGenre || !psychedelicRockGenre || !hardRockGenre) {
+            throw new Error('Required genres not found for subgenre assignments');
+        }
+
+        // Assign subgenres
+        await genreController.assignSubgenre(rockGenre.id, psychedelicRockGenre.id);
+        await genreController.assignSubgenre(rockGenre.id, hardRockGenre.id);
+
+        console.log('Subgenres assigned successfully');
+    } catch (error) {
+        console.error('Error in assignSubgenres:', error);
         throw error;
     }
 }
@@ -175,13 +233,14 @@ async function assignAlbums(
             { user_id: janeDoe.user_id, album_id: laWoman.album_id, rating: 5, favorite: true, review: 'Absolutely love this album!', created_at: now },
             { user_id: h1den.user_id, album_id: paranoid.album_id, rating: 5, favorite: true, review: 'Absolute masterpiece, RIP OZZY.', created_at: now },
         ];
+        
 
         await albumController.assignAlbums(assignments);
         console.log('Album assignments completed successfully');
     } catch (error) {
         console.error('Error in assignAlbums:', error);
         throw error;
-    }
+    }    
 }
 
 async function performQueries(
@@ -239,9 +298,11 @@ async function main() {
         const seedResult = await seedDatabase();
         const userController = container.resolve(UserController);
         const albumController = container.resolve(AlbumController);
+        const genreController = container.resolve(GenreController);
 
         await assignAlbums(userController, albumController, seedResult);
         await performQueries(userController, albumController, seedResult);
+        await assignSubgenres(genreController, { createdGenres: seedResult.createdGenres });
     } catch (error) {
         console.error('Error running the script:', error);
     } finally {

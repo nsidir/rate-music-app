@@ -1,6 +1,6 @@
 // src/types.ts
 import { InferSelectModel } from 'drizzle-orm';
-import { usersTable, albumsTable, usersToAlbumsTable, artistsTable } from './db/schema';
+import { usersTable, albumsTable, usersToAlbumsTable, artistsTable, genresTable } from './db/schema';
 
 // User Types
 export type User = InferSelectModel<typeof usersTable>;
@@ -16,3 +16,6 @@ export type UserAlbumAssignment = InferSelectModel<typeof usersToAlbumsTable>;
 // Artist Types
 export type Artist = InferSelectModel<typeof artistsTable>;
 export type CreateArtist = Omit<Artist, 'artist_id' | 'artist_slug'>;
+
+export type Genre = InferSelectModel<typeof genresTable>;
+export type CreateGenre = Omit<Genre, 'id' | 'slug'>;

@@ -94,10 +94,10 @@ app.get('/api/album-stats', (req, res, next) => {
         .catch(next);
 });
 
-// Search for an album
-app.get('/api/albums/search', (req, res, next) => {
-    albumController.searchAlbum(req, res, next).catch(next);
-});
+// // Search for an album
+// app.get('/api/albums/search', (req, res, next) => {
+//     albumController.searchAlbum(req, res, next).catch(next);
+// });
 
 // Convert name to slug
 app.get('/api/slug/:name', (req, res, next) => {
