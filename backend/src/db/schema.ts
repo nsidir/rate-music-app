@@ -18,14 +18,28 @@ export const artistsTable = pgTable("artists", {
 });
 
 // Albums table
-export const albumsTable = pgTable("albums", {
-  album_id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  album_name: varchar({ length: 255 }).notNull(),
-  artist_id: integer("artist_id")
-    .notNull()
-    .references(() => artistsTable.artist_id),
-  cover_url: varchar({ length: 255 }).notNull(),
-});
+export const albumsTable = pgTable(
+  "albums",
+  {
+    album_id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    album_name: varchar({ length: 255 }).notNull(),
+    artist_id: integer("artist_id")
+      .notNull()
+      .references(() => artistsTable.artist_id),
+    cover_url: varchar({ length: 255 }).notNull(),
+    album_slug: varchar({ length: 255 }).notNull().unique(),
+    year: integer("year").notNull(),
+    genre_id: integer("genre_id")
+      .notNull()
+      .references(() => genresTable.id),
+  },
+  (table) => ({
+    yearCheck: check(
+      "year_check",
+      sql`${table.year} >= 1890 AND ${table.year} <= ${new Date().getFullYear()}`
+    ),
+  })
+);
 
 // Junction table with rating and check constraint
 export const usersToAlbumsTable = pgTable(
@@ -48,6 +62,15 @@ export const usersToAlbumsTable = pgTable(
   })
 );
 
+// Genres table
+export const genresTable = pgTable('genres', {
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity(), // do you need to specify the id col name?
+  name: varchar('genre_name', { length: 255 }).notNull(),
+  slug: varchar('genre_slug', { length: 255 }).notNull().unique(),
+  description: varchar('description').notNull(),
+  imageUrl: varchar('cover_url', { length: 500 }),
+})
+
 // Relations for users
 export const usersRelations = relations(usersTable, ({ many }) => ({
   usersToAlbums: many(usersToAlbumsTable),
@@ -64,6 +87,10 @@ export const albumsRelations = relations(albumsTable, ({ many, one }) => ({
   artist: one(artistsTable, {
     fields: [albumsTable.artist_id],
     references: [artistsTable.artist_id],
+  }),
+  genresTable: one(genresTable, {
+    fields: [albumsTable.genre_id],
+    references: [genresTable.id],
   }),
 }));
 
