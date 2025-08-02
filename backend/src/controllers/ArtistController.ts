@@ -19,6 +19,10 @@ export class ArtistController {
     return await this.artistService.getAll();
   }
 
+  async artistExists(artistName: string): Promise<boolean> {
+    return await this.artistService.exists(artistName);
+  }
+
   async getArtistById(id: number): Promise<Artist | null> {
     return await this.artistService.getById(id);
   }

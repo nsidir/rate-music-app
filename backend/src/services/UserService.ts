@@ -2,7 +2,7 @@
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { User, CreateUser } from "../types";
-import { usersTable, usersToAlbumsTable, albumsTable, artistsTable } from "../db/schema";
+import { usersTable, usersToAlbumsTable, albumsTable, artistsTable, rolesTable } from "../db/schema";
 import { eq, and, ilike } from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
 import bcrypt from 'bcrypt';
@@ -16,7 +16,8 @@ export class UserService implements IEntityService<User, CreateUser> {
     const hashedPassword = await bcrypt.hash(data.password, 10);  // Hash the password
     const [insertedUser] = await this.dbService.getDb().insert(usersTable).values({
       ...data,
-      password: hashedPassword
+      password: hashedPassword,
+      role_name: data.role_name || 'user', // Default to user role if not provided
     }).returning();
     return insertedUser;
   }
@@ -48,9 +49,10 @@ export class UserService implements IEntityService<User, CreateUser> {
 
   // Get user by username
   async getByUsername(username: string): Promise<User | null> {
-    //should be case-insensitive
-    const [user] = await this.dbService.getDb().select().from(usersTable).where(ilike(usersTable.username, username));
-    return user ?? null;
+    const [result] = await this.dbService.getDb().select().from(usersTable)
+    .leftJoin(rolesTable, eq(usersTable.role_name, rolesTable.role_name))
+    .where(ilike(usersTable.username, username));     //should be case-insensitive
+    return result?.users ?? null;
   }
 
   // Create user helper method for controller

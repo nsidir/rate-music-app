@@ -1,11 +1,24 @@
 // src/middleware/AuthMiddleware.ts
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 
 // Extend Express's Request interface to include a user property.
 export interface AuthenticatedRequest extends Request {
   user?: any;
 }
+
+export const authorizeRole = (requiredRole: string): RequestHandler => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    const user = req.user;
+
+    if (!user || user.role_name !== requiredRole) {
+      res.status(403).json({ error: 'Forbidden: You do not have the required permissions.' });
+      return;
+    }
+
+    next();
+  };
+};
 
 export class AuthMiddleware {
   static authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction): void {

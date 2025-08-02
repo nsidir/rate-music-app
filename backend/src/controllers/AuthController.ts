@@ -3,6 +3,7 @@ import { injectable, inject } from 'tsyringe';
 import { Request, Response } from 'express';
 import { UserController } from './UserController';
 import jwt from 'jsonwebtoken';
+import { AuthenticatedRequest } from 'src/middleware/AuthMiddleware';
 
 @injectable()
 export class AuthController {
@@ -23,7 +24,8 @@ export class AuthController {
       const newUser = await this.userController.createUser({ 
         username, 
         password, // Pass plain password, UserService will hash it
-        email 
+        email,
+        role_name: 'user' // Default to user role
       });
 
       return res.status(201).json({ message: 'User created', user: newUser });
@@ -48,7 +50,7 @@ export class AuthController {
 
       // Generate JWT token
       const token = jwt.sign(
-        { id: user.user_id, username: user.username },
+        { id: user.user_id, username: user.username, role_name: user.role_name },
         process.env.VITE_JWT_SECRET || 'supersecretkey',
         { expiresIn: '24h' }
       );
@@ -56,11 +58,27 @@ export class AuthController {
       return res.status(200).json({ 
         message: 'Login successful', 
         token, 
-        user: { id: user.user_id, username: user.username }
+        user: { id: user.user_id, username: user.username, role_name: user.role_name }
       });
     } catch (error) {
       console.error('Error during login:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  async verifyToken(req: AuthenticatedRequest, res: Response) {
+  try {
+    // If middleware passed, token is valid
+    return res.status(200).json({ 
+      user: { 
+        id: req.user.id, 
+        username: req.user.username,
+        role_name: req.user.role_name 
+      } 
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
 }

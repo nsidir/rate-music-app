@@ -18,9 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-
-const apiUrl = import.meta.env.VITE_API_URL
+import { computed } from 'vue'
 
 // Define the Album interface to match the API response.
 interface Album {
@@ -31,30 +29,20 @@ interface Album {
 }
 
 // Accept the search query as a prop.
-const props = defineProps<{ searchQuery: string }>()
-
-// Create a reactive reference for the album data.
-const albums = ref<Album[]>([])
-
-onMounted(async () => {
-  try {
-    const response = await fetch(`${apiUrl}/albums`)
-    if (response.ok) {
-      albums.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Error fetching albums:', error)
-  }
-})
+const props = defineProps<{ 
+  searchQuery?: string
+  albums: Album[]
+}>()
 
 // Compute the filtered albums based on the search query.
 const filteredAlbums = computed(() => {
-  if (!props.searchQuery.trim()) return albums.value
-  const query = props.searchQuery.toLowerCase()
-  return albums.value.filter(
+  const search = props.searchQuery ?? ''
+  if (!search.trim()) return props.albums
+  const query = search.toLowerCase()
+  return props.albums.filter(
     album =>
-      album.album_name.toLowerCase().includes(query) ||
-      album.artist_name.toLowerCase().includes(query)
+      (album.album_name && album.album_name.toLowerCase().includes(query)) ||
+      (album.artist_name && album.artist_name.toLowerCase().includes(query))
   )
 })
 </script>

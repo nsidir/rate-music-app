@@ -7,8 +7,23 @@
         <img :src="album.cover_url" :alt="album.album_name" class="album-cover" />
         <div class="text-info">
           <h1>{{ album.album_name }}</h1>
-          <h2>{{ album.artist_name }}</h2>
-          
+          <!-- Go to artist page -->
+          <router-link :to="`/artist/${album.artist_slug}`" class="artist-link">
+            <h2>{{ album.artist_name }}</h2>
+          </router-link>
+
+          <!-- Album Info Section -->
+          <div class="album-info">
+            <div class="info-item" v-if="album.year">
+              <span class="info-label">Year: </span>
+              <span class="info-value">{{ album.year }}</span>
+            </div>
+            <div class="info-item" v-if="album.genre">
+              <span class="info-label">Genre: </span>
+              <span class="info-value">{{ album.genre }}</span>
+            </div>
+          </div>
+
           <!-- Community Stats Section -->
           <div class="community-stats">
             <div class="stat-item">
@@ -88,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import StarRating from './StarRating.vue';
 import FavoriteIcon from './FavoriteIcon.vue';
@@ -106,6 +121,9 @@ interface Album {
   cover_url: string;
   avgRating: string | null;
   favoriteCount: number | null;
+  artist_slug: string;
+  year: number;
+  genre: string;
 }
 
 interface Review {
@@ -128,11 +146,6 @@ const reviewSuccess = ref('');
 const userRating = ref<number>(0); 
 const isFavorite = ref(false);
 const userHasReview = ref(false);
-
-// Computed property to check if user has a review
-const userHasExistingReview = computed(() => {
-  return userHasReview.value || newReview.value.trim() !== '';
-});
 
 // Helper function to fetch/refresh album data
 async function fetchAlbumData() {
@@ -351,6 +364,18 @@ const toggleFavorite = () => {
   display: flex;
   flex-direction: row;
   gap: 30px;
+}
+
+.album-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+  padding-bottom: 10px;
+}
+
+.info-item {
+  font-size: 1.2em;
 }
 
 .album-cover {
