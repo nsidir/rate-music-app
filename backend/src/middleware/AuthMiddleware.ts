@@ -7,18 +7,6 @@ export interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
-export const authorizeRole = (requiredRole: string): RequestHandler => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    const user = req.user;
-
-    if (!user || user.role_name !== requiredRole) {
-      res.status(403).json({ error: 'Forbidden: You do not have the required permissions.' });
-      return;
-    }
-
-    next();
-  };
-};
 
 export class AuthMiddleware {
   static authenticateJWT(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
@@ -47,4 +35,17 @@ export class AuthMiddleware {
       res.status(403).json({ error: 'Invalid or expired token' });
     }
   }
+
+  static authorizeRole = (requiredRole: string): RequestHandler => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    const user = req.user;
+
+    if (!user || user.role_name !== requiredRole) {
+      res.status(403).json({ error: 'Forbidden: You do not have the required permissions.' });
+      return;
+    }
+
+    next();
+  };
+};
 }

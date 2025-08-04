@@ -10,12 +10,14 @@ import { container } from 'tsyringe';
 import { UserController } from './controllers/UserController';
 import { AlbumController } from './controllers/AlbumController';
 import { ArtistController } from './controllers/ArtistController';
+import { GenreController } from '@controllers/GenreController';
 import { AuthController } from './controllers/AuthController';
 import { DatabaseService } from './services/DatabaseService';
 import { UserService } from './services/UserService';
 import { AlbumService } from './services/AlbumService';
 import { ArtistService } from './services/ArtistService';
-import { AuthenticatedRequest, AuthMiddleware, authorizeRole } from './middleware/AuthMiddleware';
+import { GenreService } from './services/GenreService';
+import { AuthenticatedRequest, AuthMiddleware } from './middleware/AuthMiddleware';
 import { toSlug } from './utility/toSlug';
 
 // Environment setup
@@ -28,6 +30,8 @@ container.registerSingleton(DatabaseService);
 container.register(UserService, { useClass: UserService });
 container.register(AlbumService, { useClass: AlbumService });
 container.register(ArtistService, { useClass: ArtistService });
+container.register(GenreService, { useClass: GenreService });
+container.register(AuthController, { useClass: AuthController });
 
 const app = express();
 const port = process.env.VITE_PORT || 3000;
@@ -42,6 +46,7 @@ const userController = container.resolve(UserController);
 const albumController = container.resolve(AlbumController);
 const artistController = container.resolve(ArtistController);
 const authController = container.resolve(AuthController);
+const genreController = container.resolve(GenreController);
 
 // --- Public Routes ---
 
@@ -119,17 +124,20 @@ app.get('/api/albums/:id/reviews', async (req, res, next) => {
 });
 
 // Album details with stats
-app.get('/api/albums/:id', (req, res, next) => {
-    const albumId = parseInt(req.params.id, 10);
-    albumController.getAlbumWithStats(albumId)
-        .then(album => {
-            if (album) {
-                res.json(album);
-            } else {
-                res.status(404).json({ error: 'Album not found' });
-            }
-        })
-        .catch(next);
+app.get('/api/albums/:id', async (req, res, next) => {
+    try {
+        // return album details with stats + its genres both appended in the same object json
+        const albumId = parseInt(req.params.id, 10);
+        const album = await albumController.getAlbumWithStats(albumId);
+        const genres = await genreController.getGenresOfAlbum(albumId);
+        if (album) {
+            res.json({ ...album, genres });
+        } else {
+            res.status(404).json({ error: 'Album not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
 });
 
 
@@ -141,7 +149,7 @@ app.get('/api/auth/verify', AuthMiddleware.authenticateJWT, (req, res, next) => 
 });
 
 //If admin wants to add an album
-app.post('/api/albums', AuthMiddleware.authenticateJWT, authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+app.post('/api/albums', AuthMiddleware.authenticateJWT, AuthMiddleware.authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const albumData = req.body;
         const newAlbum = await albumController.createAlbum(albumData);

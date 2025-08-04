@@ -15,7 +15,7 @@ export const usersTable = pgTable("users", {
   role_name: varchar({ length: 50 }).notNull().references(() => rolesTable.role_name, { onDelete: "cascade" }),
 });
 
-// Artists table
+// Artists table TODO: add cover image url
 export const artistsTable = pgTable("artists", {
   artist_id: integer().primaryKey().generatedAlwaysAsIdentity(),
   artist_name: varchar({ length: 255 }).notNull().unique(),
@@ -34,10 +34,7 @@ export const albumsTable = pgTable(
     cover_url: varchar({ length: 255 }).notNull(),
     album_slug: varchar({ length: 255 }).notNull().unique(),
     year: integer("year").notNull(),
-    genre_id: integer("genre_id")
-      .notNull()
-      .references(() => genresTable.id),
-  },
+},
   (table) => ({
     yearCheck: check(
       "year_check",
@@ -76,7 +73,6 @@ export const genresTable = pgTable('genres', {
   imageUrl: varchar('cover_url', { length: 500 }),
 })
 
-// TODO 
 export const albumsToGenresTable = pgTable(
   'albums_to_genres',
   {
@@ -111,12 +107,18 @@ export const genresRelations = relations(genresTable, ({ many }) => ({
   subgenres: many(genresToSubgenresTable, {
     relationName: "subgenres",
   }),
+  albumsToGenres: many(albumsToGenresTable),
 }));
 
-// TODO 
-export const albumsToGenresRelations = relations(albumsToGenresTable, ({ many }) => ({
-  albums: many(albumsTable),
-  genres: many(genresTable),
+export const albumsToGenresRelations = relations(albumsToGenresTable, ({ one }) => ({
+  album: one(albumsTable, {
+    fields: [albumsToGenresTable.album_id],
+    references: [albumsTable.album_id],
+  }),
+  genre: one(genresTable, {
+    fields: [albumsToGenresTable.genre_id],
+    references: [genresTable.id],
+  }),
 }));
 
 // Relations for roles
@@ -141,10 +143,7 @@ export const albumsRelations = relations(albumsTable, ({ many, one }) => ({
     fields: [albumsTable.artist_id],
     references: [artistsTable.artist_id],
   }),
-  genresTable: one(genresTable, {
-    fields: [albumsTable.genre_id],
-    references: [genresTable.id],
-  }),
+  albumsToGenres: many(albumsToGenresTable),
 }));
 
 // Relations for usersToAlbums junction table

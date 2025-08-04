@@ -18,9 +18,11 @@
               <span class="info-label">Year: </span>
               <span class="info-value">{{ album.year }}</span>
             </div>
-            <div class="info-item" v-if="album.genre_name">
-              <span class="info-label">Genre: </span>
-              <span class="info-value">{{ album.genre_name }}</span>
+            <div class="info-item" v-if="album?.genres?.length">
+              <span class="info-label">Genres: </span>
+              <span class="info-value">
+                {{ album.genres.map(genre => genre.name).join(', ') }}
+              </span>
             </div>
           </div>
 
@@ -123,7 +125,10 @@ interface Album {
   favoriteCount: number | null;
   artist_slug: string;
   year: number;
-  genre_name: string;
+  genres: {
+  id: number;
+  name: string;
+}[];
 }
 
 interface Review {

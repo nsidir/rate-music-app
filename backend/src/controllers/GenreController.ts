@@ -33,4 +33,12 @@ async getGenreByName(name: string): Promise<Genre | null> {
   async assignSubgenre(parentId: number, childId: number): Promise<void> {
     await this.genreService.assignSubgenre(parentId, childId);
   }
+
+  async assignAlbumToGenre(albumId: number, genreId: number): Promise<void> {
+    await this.genreService.assignAlbumToGenre(albumId, genreId);
+  }
+
+  async getGenresOfAlbum(albumId: number): Promise<Genre[]> {
+    return await this.genreService.getGenresofAlbum(albumId);
+  }
 }

@@ -40,8 +40,8 @@ interface SeedResult {
     createdGenres: Genre[];
 }
 
-// Define a type for album seed data that omits artist_id
-type AlbumSeed = Omit<CreateAlbum, 'artist_id'>;
+// Define a type for album seed data that omits artist_id but includes genre_id
+type AlbumSeed = Omit<CreateAlbum, 'artist_id'> & { genre_id: number | number[] };
 
 async function createGenreIfNotExists(genreController: GenreController, name: string, description: string, imageUrl: string | null): Promise<Genre> {
     const existingGenre = await genreController.getGenreByName(name);
@@ -114,7 +114,7 @@ async function seedDatabase(): Promise<SeedResult> {
                     album_name: 'Paranoid',
                     cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5',
                     year: 1970,
-                    genre_id: heavyMetalGenre.id,
+                    genre_id: [heavyMetalGenre.id, hardRockGenre.id]
                 },
                 {
                     album_name: 'Master of Reality',
@@ -166,6 +166,28 @@ async function seedDatabase(): Promise<SeedResult> {
             albumsToCreate.map(album => albumController.createAlbum(album))
         );
         console.log('Inserted albums:', createdAlbums);
+
+        // Assign genres to albums
+        for (const createdAlbum of createdAlbums) {
+            // Find the corresponding AlbumSeed to get the genre_id
+            const artist = createdArtists.find(a => a.artist_id === createdAlbum.artist_id);
+            if (!artist) continue;
+            const albumSeeds = albumData[artist.artist_name];
+            if (!albumSeeds) continue;
+            const albumSeed = albumSeeds.find(a => a.album_name === createdAlbum.album_name);
+            if (!albumSeed) continue;
+
+            // If genre_id is an array, assign each genre
+            if (Array.isArray(albumSeed.genre_id)) {
+                for (const genreId of albumSeed.genre_id) {
+                    await genreController.assignAlbumToGenre(createdAlbum.album_id, genreId);
+                }
+            }
+            else {
+                await genreController.assignAlbumToGenre(createdAlbum.album_id, albumSeed.genre_id);
+            }
+
+        }
 
         return { createdUsers, createdAlbums, createdArtists, createdGenres: [
             rockGenre, heavyMetalGenre, psychedelicRockGenre, hardRockGenre

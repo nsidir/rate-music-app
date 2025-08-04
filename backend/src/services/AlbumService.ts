@@ -1,13 +1,25 @@
-// src/services/AlbumService.ts
 import { injectable, inject } from "tsyringe";
 import { IEntityService } from "../interfaces/IEntityService";
 import { Album, CreateAlbum, UserAlbumAssignment } from "../types";
-import { albumsTable, artistsTable, usersToAlbumsTable, usersTable, genresTable } from "../db/schema";
-import { eq, and, avg, count, sql, isNotNull, desc } from "drizzle-orm";
+import {
+  albumsTable,
+  artistsTable,
+  usersToAlbumsTable,
+  usersTable,
+  genresTable,
+  albumsToGenresTable,
+} from "../db/schema";
+import {
+  eq,
+  and,
+  avg,
+  count,
+  sql,
+  isNotNull,
+  desc,
+} from "drizzle-orm";
 import { DatabaseService } from "./DatabaseService";
-import { searchAlbumCover, searchAlbumsByKeyword } from './MusicBrainzService';
-import { toSlug } from '../utility/toSlug';
-import { g } from "vitest/dist/chunks/suite.d.FvehnV49";
+import { toSlug } from "../utility/toSlug";
 
 @injectable()
 export class AlbumService implements IEntityService<Album, CreateAlbum> {
@@ -15,23 +27,32 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
 
   async create(data: CreateAlbum): Promise<Album> {
     const album_slug = toSlug(data.album_name);
-    const [insertedAlbum] = await this.dbService.getDb().insert(albumsTable).values({ ...data, album_slug }).returning();
+    const [insertedAlbum] = await this.dbService
+      .getDb()
+      .insert(albumsTable)
+      .values({ ...data, album_slug })
+      .returning();
     return insertedAlbum;
   }
 
-  async createWithArtistName(data: Omit<CreateAlbum, 'artist_id'> & { artist_name: string }): Promise<Album> {
+  async createWithArtistName(
+    data: Omit<CreateAlbum, "artist_id" | "genre_id"> & {
+      artist_name: string;
+      genre_ids?: number[];
+    }
+  ): Promise<Album> {
     const db = this.dbService.getDb();
 
-    // if artist exists
+    // Handle artist
     let [artist] = await db
       .select()
       .from(artistsTable)
       .where(eq(artistsTable.artist_name, data.artist_name));
 
-    // if artist doesn't exist, insert
     if (!artist) {
       const artist_slug = toSlug(data.artist_name);
-      [artist] = await db.insert(artistsTable)
+      [artist] = await db
+        .insert(artistsTable)
         .values({
           artist_name: data.artist_name,
           artist_slug,
@@ -39,43 +60,75 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         .returning();
     }
 
-    // insert the album using artist_id
+    // Insert album
     const album_slug = toSlug(data.album_name);
-    const [insertedAlbum] = await db.insert(albumsTable)
+    const [insertedAlbum] = await db
+      .insert(albumsTable)
       .values({
         album_name: data.album_name,
         cover_url: data.cover_url,
         album_slug,
         artist_id: artist.artist_id,
         year: data.year,
-        genre_id: data.genre_id,
       })
       .returning();
+
+    // Insert genres (many-to-many)
+    if (data.genre_ids && data.genre_ids.length > 0) {
+      const genreLinks = data.genre_ids.map((genre_id) => ({
+        album_id: insertedAlbum.album_id,
+        genre_id,
+      }));
+      await db.insert(albumsToGenresTable).values(genreLinks);
+    }
 
     return insertedAlbum;
   }
 
   async getAll(): Promise<Album[]> {
-    return await this.dbService.getDb().select({
-      album_id: albumsTable.album_id,
-      album_name: albumsTable.album_name,
-      artist_id: albumsTable.artist_id,
-      cover_url: albumsTable.cover_url,
-      album_slug: albumsTable.album_slug,
-      year: albumsTable.year,
-      genre_id: albumsTable.genre_id,
-    })
-    .from(albumsTable)
-    .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
+    const db = this.dbService.getDb();
+
+    const albums = await db
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_id: albumsTable.artist_id,
+        cover_url: albumsTable.cover_url,
+        album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+        artist_name: artistsTable.artist_name,
+      })
+      .from(albumsTable)
+      .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
+
+    return albums;
   }
 
   async getById(id: number): Promise<Album | null> {
-    const [album] = await this.dbService.getDb().select().from(albumsTable).where(eq(albumsTable.album_id, id));
+    const db = this.dbService.getDb();
+
+    const [album] = await db
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_id: albumsTable.artist_id,
+        cover_url: albumsTable.cover_url,
+        album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+      })
+      .from(albumsTable)
+      .where(eq(albumsTable.album_id, id));
+
     return album ?? null;
   }
 
   async update(id: number, data: Partial<Album>): Promise<Album> {
-    const [updatedAlbum] = await this.dbService.getDb().update(albumsTable).set(data).where(eq(albumsTable.album_id, id)).returning();
+    const [updatedAlbum] = await this.dbService
+      .getDb()
+      .update(albumsTable)
+      .set(data)
+      .where(eq(albumsTable.album_id, id))
+      .returning();
     return updatedAlbum;
   }
 
@@ -88,28 +141,26 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
   }
 
   async getAlbumWithStats(albumId: number): Promise<any | null> {
-    const [albumDetails] = await this.dbService.getDb().select({
+    const db = this.dbService.getDb();
+
+    const [albumDetails] = await db
+      .select({
         album_id: albumsTable.album_id,
         album_name: albumsTable.album_name,
         artist_id: albumsTable.artist_id,
         cover_url: albumsTable.cover_url,
-        artist_name: artistsTable.artist_name,
-        artist_slug: artistsTable.artist_slug,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre_id: albumsTable.genre_id,
-        genre_name: genresTable.name,
+        artist_name: artistsTable.artist_name,
+        artist_slug: artistsTable.artist_slug,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
-      .leftJoin(genresTable, eq(albumsTable.genre_id, genresTable.id))
       .where(eq(albumsTable.album_id, albumId));
 
-    if (!albumDetails) {
-      return null;
-    }
+    if (!albumDetails) return null;
 
-    const [albumStats] = await this.dbService.getDb()
+    const [albumStats] = await db
       .select({
         avgRating: avg(usersToAlbumsTable.rating),
         favoriteCount: count(sql`CASE WHEN ${usersToAlbumsTable.favorite} = true THEN 1 END`),
@@ -117,15 +168,27 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
       .from(usersToAlbumsTable)
       .where(eq(usersToAlbumsTable.album_id, albumId));
 
+    const genres = await db
+      .select({
+        genre_id: genresTable.id,
+        genre_name: genresTable.name,
+      })
+      .from(albumsToGenresTable)
+      .innerJoin(genresTable, eq(albumsToGenresTable.genre_id, genresTable.id))
+      .where(eq(albumsToGenresTable.album_id, albumId));
+
     return {
       ...albumDetails,
       avgRating: albumStats.avgRating ? parseFloat(albumStats.avgRating).toFixed(2) : null,
       favoriteCount: Number(albumStats.favoriteCount) || 0,
+      genres,
     };
   }
 
   async getAllAlbumsWithStats(): Promise<any[]> {
-    const albumsWithStats = await this.dbService.getDb()
+    const db = this.dbService.getDb();
+
+    const albums = await db
       .select({
         album_id: albumsTable.album_id,
         album_name: albumsTable.album_name,
@@ -133,36 +196,45 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre_id: albumsTable.genre_id,
-        genre_name: genresTable.name,
         avgRating: avg(usersToAlbumsTable.rating),
         ratingCount: count(usersToAlbumsTable.rating),
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
       .leftJoin(usersToAlbumsTable, eq(albumsTable.album_id, usersToAlbumsTable.album_id))
-      .leftJoin(genresTable, eq(albumsTable.genre_id, genresTable.id))
-      .groupBy(albumsTable.album_id, artistsTable.artist_name, genresTable.name)
+      .groupBy(albumsTable.album_id, artistsTable.artist_name)
       .orderBy(desc(sql`(${avg(usersToAlbumsTable.rating)})`));
 
-    return albumsWithStats.map(album => ({
+    // fetch genres for each album
+    const allGenres = await db
+      .select({
+        album_id: albumsToGenresTable.album_id,
+        genre_id: genresTable.id,
+        genre_name: genresTable.name,
+      })
+      .from(albumsToGenresTable)
+      .innerJoin(genresTable, eq(albumsToGenresTable.genre_id, genresTable.id));
+
+    return albums.map((album) => ({
       ...album,
       avgRating: album.avgRating ? parseFloat(album.avgRating).toFixed(2) : null,
       ratingCount: Number(album.ratingCount) || 0,
+      genres: allGenres
+        .filter((g) => g.album_id === album.album_id)
+        .map((g) => ({ id: g.genre_id, name: g.genre_name })),
     }));
   }
 
-
   async findAlbumByNameAndArtist(albumName: string, artistName: string): Promise<Album | null> {
     const db = this.dbService.getDb();
-    const [album] = await db.select({
+    const [album] = await db
+      .select({
         album_id: albumsTable.album_id,
         album_name: albumsTable.album_name,
         artist_id: albumsTable.artist_id,
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
-        genre_id: albumsTable.genre_id,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -170,77 +242,28 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
     return album ?? null;
   }
 
-  // Search for album using cache aside approach
-  // This function returns up to 10 album objects matching the keyword,
-  // including cover art obtained via the external API.
-  // It does NOT insert albums into the database.
-  // async searchAlbumsInfo(keyword: string): Promise<Album[]> {
-  //   const db = this.dbService.getDb();
-  //   // Call the MusicBrainz API to search for albums matching the keyword
-  //   const releases = await searchAlbumsByKeyword(keyword);
-  //   const albums: Album[] = [];
-
-  //   for (const release of releases) {
-  //     // Extract album title and artist name. MusicBrainz releases usually include an "artist-credit" array.
-  //     const albumName: string = release.title;
-  //     const artistCredit = release["artist-credit"];
-  //     const year: number = release.date ? new Date(release.date).getFullYear() : new Date().getFullYear();
-  //     const genre = release.year ? "Unknown" : "Various"; // Placeholder, as MusicBrainz doesn't always provide genre
-  //     const artistName: string | null =
-  //       Array.isArray(artistCredit) && artistCredit.length > 0
-  //         ? artistCredit[0].name
-  //         : null;
-  //     if (!albumName || !artistName) continue;
-
-  //     // Check if the album already exists in the local cache (database)
-  //     let album = await this.findAlbumByNameAndArtist(albumName, artistName);
-  //     if (!album) {
-  //       // Fetch cover art for this album from the external API
-  //       const coverUrl = await searchAlbumCover(albumName, artistName);
-  //       if (!coverUrl) {
-  //         // If no cover art is found, skip this album
-  //         continue;
-  //       }
-
-  //       // Instead of inserting the album into the DB,
-  //       // create a temporary album object with dummy IDs (e.g., album_id and artist_id set to 0)
-  //       album = {
-  //         album_id: 0, // Indicates not persisted in DB
-  //         album_name: albumName,
-  //         artist_id: 0, // No associated artist record in DB yet
-  //         cover_url: coverUrl,
-  //         album_slug: toSlug(albumName),
-  //         // You can include additional joined info like artist_name if your Album type expects it.
-  //         artist_name: artistName,
-  //         year: year,
-  //         genre_id: genre,
-  //       } as Album;
-  //     }
-  //     albums.push(album);
-  //   }
-  //   return albums;
-  // }
-
-  // Get all reviews for a specific album
   async getAlbumReviews(albumId: number): Promise<any[]> {
-      const db = this.dbService.getDb();
-      
-      const reviews = await db
-          .select({
-              review_id: usersToAlbumsTable.user_id,
-              username: usersTable.username,
-              comment: usersToAlbumsTable.review,
-              created_at: usersToAlbumsTable.created_at
-          })
-          .from(usersToAlbumsTable)
-          .innerJoin(usersTable, eq(usersToAlbumsTable.user_id, usersTable.user_id))
-          .innerJoin(albumsTable, eq(usersToAlbumsTable.album_id, albumsTable.album_id))
-          .where(and(
-              eq(usersToAlbumsTable.album_id, albumId),
-              isNotNull(usersToAlbumsTable.review),
-              sql`${usersToAlbumsTable.review} != ''`
-          ))
-          .orderBy(desc(usersToAlbumsTable.created_at));      
-      return reviews;
+    const db = this.dbService.getDb();
+
+    const reviews = await db
+      .select({
+        review_id: usersToAlbumsTable.user_id,
+        username: usersTable.username,
+        comment: usersToAlbumsTable.review,
+        created_at: usersToAlbumsTable.created_at,
+      })
+      .from(usersToAlbumsTable)
+      .innerJoin(usersTable, eq(usersToAlbumsTable.user_id, usersTable.user_id))
+      .innerJoin(albumsTable, eq(usersToAlbumsTable.album_id, albumsTable.album_id))
+      .where(
+        and(
+          eq(usersToAlbumsTable.album_id, albumId),
+          isNotNull(usersToAlbumsTable.review),
+          sql`${usersToAlbumsTable.review} != ''`
+        )
+      )
+      .orderBy(desc(usersToAlbumsTable.created_at));
+
+    return reviews;
   }
 }

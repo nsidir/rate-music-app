@@ -1,5 +1,5 @@
 import { injectable, inject } from "tsyringe";
-import { genresTable, genresToSubgenresTable } from "../db/schema";
+import { genresTable, genresToSubgenresTable, albumsToGenresTable } from "../db/schema";
 import { DatabaseService } from "./DatabaseService";
 import { eq } from "drizzle-orm";
 import { Genre, CreateGenre } from "src/types";
@@ -42,5 +42,18 @@ export class GenreService implements IEntityService<Genre, CreateGenre> {
 
   async assignSubgenre(parentId: number, childId: number): Promise<void> {
     await this.dbService.getDb().insert(genresToSubgenresTable).values({ genre_id: parentId, subgenre_id: childId });
+  }
+
+  async assignAlbumToGenre(albumId: number, genreId: number): Promise<void> {
+    await this.dbService.getDb().insert(albumsToGenresTable).values({ album_id: albumId, genre_id: genreId });
+  }
+
+  async getGenresofAlbum(albumId: number): Promise<Genre[]> {
+    const results = await this.dbService.getDb()
+      .select()
+      .from(genresTable)
+      .innerJoin(albumsToGenresTable, eq(genresTable.id, albumsToGenresTable.genre_id))
+      .where(eq(albumsToGenresTable.album_id, albumId));
+    return results.map((row: any) => row.genres);
   }
 }
