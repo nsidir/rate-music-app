@@ -24,6 +24,10 @@ export class AlbumController {
     return await this.albumService.getById(id);
   }
 
+  async getAlbumByName(name: string): Promise<Album | null> {
+    return await this.albumService.getByName(name);
+  }
+
   async updateAlbum(id: number, data: Partial<Album>): Promise<Album> {
     return await this.albumService.update(id, data);
   }

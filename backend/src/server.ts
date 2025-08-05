@@ -99,6 +99,16 @@ app.get('/api/album-stats', (req, res, next) => {
         .catch(next);
 });
 
+//Genres
+app.get('/api/genres', async (req, res, next) => {
+    try {
+        const genres = await genreController.getAllGenres();
+        res.json(genres);
+    } catch (error) {
+        next(error);
+    }
+});
+
 // // Search for an album
 // app.get('/api/albums/search', (req, res, next) => {
 //     albumController.searchAlbum(req, res, next).catch(next);
@@ -147,6 +157,40 @@ app.get('/api/albums/:id', async (req, res, next) => {
 app.get('/api/auth/verify', AuthMiddleware.authenticateJWT, (req, res, next) => {
   authController.verifyToken(req as AuthenticatedRequest, res).catch(next);
 });
+
+//If admin wants to add a genre
+app.post('/api/genres', AuthMiddleware.authenticateJWT, AuthMiddleware.authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const genreData = req.body;
+        const newGenre = await genreController.createGenre(genreData);
+        res.status(201).json(newGenre);
+    } catch (error) {
+        next(error);
+    }
+});
+
+//If admin wants to assign genres to an album
+app.post('/api/genres/assign-album', AuthMiddleware.authenticateJWT, AuthMiddleware.authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const genreName = req.body.genreName;
+        const albumName = req.body.albumName;
+        const genre = await genreController.getGenreByName(genreName);
+        const album = await albumController.getAlbumByName(albumName);
+        if (!album) {
+            res.status(404).json({ error: `Album with name "${albumName}" not found` });
+            return;
+        }
+        if (genre?.id === null || genre?.id === undefined) {
+            res.status(404).json({ error: `Genre with name "${genreName}" not found` });
+            return;
+        }
+        await genreController.assignAlbumToGenre(album.album_id, genre.id);
+        res.status(200).json({ message: `Album with id:${album.album_id} assigned to genre with id:${genre.id}` });
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 //If admin wants to add an album
 app.post('/api/albums', AuthMiddleware.authenticateJWT, AuthMiddleware.authorizeRole('admin'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

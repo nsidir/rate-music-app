@@ -122,6 +122,24 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
     return album ?? null;
   }
 
+  async getByName(name: string): Promise<Album | null> {
+    const db = this.dbService.getDb();
+
+    const [album] = await db
+      .select({
+        album_id: albumsTable.album_id,
+        album_name: albumsTable.album_name,
+        artist_id: albumsTable.artist_id,
+        cover_url: albumsTable.cover_url,
+        album_slug: albumsTable.album_slug,
+        year: albumsTable.year,
+      })
+      .from(albumsTable)
+      .where(eq(albumsTable.album_name, name));
+
+    return album ?? null;
+  }
+
   async update(id: number, data: Partial<Album>): Promise<Album> {
     const [updatedAlbum] = await this.dbService
       .getDb()

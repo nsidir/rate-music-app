@@ -25,7 +25,7 @@
         <button class="signup" @click="signup">Signup</button>
       </template>
       <template v-else>
-        <button v-if="isAdmin" @click="openInsertModal" class="insert-album">Insert Album</button>
+        <button v-if="isAdmin" @click="openInsertModal" class="insert-album">Insert Info</button>
         <button class="profile" @click="goToProfile">Profile</button>
         <button class="logout" @click="userStore.logout">Logout</button>
       </template>
