@@ -16,10 +16,30 @@
                 <label for="genre">Genre Name *</label>
                 <input 
                   id="genre" 
-                  v-model="newGenre" 
+                  v-model="genreForm.name" 
                   placeholder="Enter a new genre name" 
                   :disabled="isSubmitting"
-                  required 
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="description">Description *</label>
+                <input
+                  id="description"
+                  v-model="genreForm.description"
+                  placeholder="Enter a genre description"
+                  :disabled="isSubmitting"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="imageUrl">Image URL *</label>
+                <input
+                  id="imageUrl"
+                  v-model="genreForm.imageUrl"
+                  placeholder="Enter a genre image URL"
+                  :disabled="isSubmitting"
+                  required
                 />
               </div>
               <div class="modal-actions">
@@ -137,12 +157,24 @@ interface AlbumForm {
   genres: string
 }
 
+interface GenreForm {
+  name: string
+  description: string
+  imageUrl: string
+}
+
 const albumForm = reactive<AlbumForm>({
   album_name: '',
   artist_name: '',
   cover_url: '',
   year: 1969,
   genres: ''
+})
+
+const genreForm = reactive<GenreForm>({
+  name: '',
+  description: '',
+  imageUrl: ''
 })
 
 const currentYear = new Date().getFullYear()
@@ -163,7 +195,11 @@ const resetForm = () => {
     year: 1969,
     genres: ''
   })
-  newGenre.value = ''
+  Object.assign(genreForm, {
+    name: '',
+    description: '',
+    imageUrl: ''
+  })
 }
 
 // Reset form when modal is closed
@@ -186,8 +222,6 @@ const getOrCreateArtist = async (artistName: string) => {
   return result.artist.artist_id
 }
 
-const newGenre = ref('') // for creating a new genre
-
 const submitGenre = async () => {
   if (isSubmitting.value) return
 
@@ -201,9 +235,9 @@ const submitGenre = async () => {
       return
     }
 
-    const genreName = newGenre.value.trim()
-    if (!genreName) {
-      alert('Please enter a genre name.')
+    const { name, description, imageUrl } = genreForm
+    if (!name.trim() || !description.trim() || !imageUrl.trim()) {
+      alert('Please fill in all required fields.')
       return
     }
 
@@ -214,9 +248,9 @@ const submitGenre = async () => {
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({
-        name: genreName,
-        description: genreName,
-        imageUrl: '' // or provide a default
+        name: genreForm.name,
+        description: genreForm.description,
+        imageUrl: genreForm.imageUrl
       })
     })
 
@@ -225,8 +259,12 @@ const submitGenre = async () => {
       throw new Error(errorData.message || `Server error: ${response.status}`)
     }
 
-    alert(`Genre "${genreName}" inserted successfully!`)
-    newGenre.value = ''
+    alert(`Genre "${genreForm.name}" inserted successfully!`)
+    Object.assign(genreForm, {
+      name: '',
+      description: '',
+      imageUrl: ''
+    })
 
   } catch (err) {
     console.error('Failed to insert genre:', err)
