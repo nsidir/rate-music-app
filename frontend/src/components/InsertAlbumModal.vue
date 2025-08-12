@@ -7,40 +7,23 @@
           <h2>Insert Info</h2>
           <button class="close-btn" @click="closeModal">&times;</button>
         </div>
-        
+
+        <!-- Insert Genre Section -->
         <div class="modal-content">
           <div class="insert-genre">
             <h3>Add New Genre</h3>
             <form @submit.prevent="submitGenre" class="modal-form">
               <div class="form-group">
                 <label for="genre">Genre Name *</label>
-                <input 
-                  id="genre" 
-                  v-model="genreForm.name" 
-                  placeholder="Enter a new genre name" 
-                  :disabled="isSubmitting"
-                  required
-                />
+                <input id="genre" v-model="genreForm.name" placeholder="Enter a new genre name" :disabled="isSubmitting" required />
               </div>
               <div class="form-group">
                 <label for="description">Description *</label>
-                <input
-                  id="description"
-                  v-model="genreForm.description"
-                  placeholder="Enter a genre description"
-                  :disabled="isSubmitting"
-                  required
-                />
+                <input id="description" v-model="genreForm.description" placeholder="Enter a genre description" :disabled="isSubmitting" required />
               </div>
               <div class="form-group">
                 <label for="imageUrl">Image URL *</label>
-                <input
-                  id="imageUrl"
-                  v-model="genreForm.imageUrl"
-                  placeholder="Enter a genre image URL"
-                  :disabled="isSubmitting"
-                  required
-                />
+                <input id="imageUrl" v-model="genreForm.imageUrl" placeholder="Enter a genre image URL" :disabled="isSubmitting" required />
               </div>
               <div class="modal-actions">
                 <button type="submit" :disabled="isSubmitting" class="submit-btn">
@@ -52,65 +35,45 @@
 
           <div class="section-divider"></div>
 
+          <!-- Insert Album Section -->
           <div class="insert-album">
             <h3>Insert Album</h3>
             <form @submit.prevent="submitAlbum" class="modal-form">
               <div class="form-row">
                 <div class="form-group">
                   <label for="title">Title *</label>
-                  <input 
-                    id="title" 
-                    v-model="albumForm.album_name" 
-                    placeholder="Album title" 
-                    required
-                    :disabled="isSubmitting" 
-                  />
+                  <input id="title" v-model="albumForm.album_name" placeholder="Album title" required :disabled="isSubmitting" />
                 </div>
                 <div class="form-group">
                   <label for="artist">Artist *</label>
-                  <input 
-                    id="artist" 
-                    v-model="albumForm.artist_name" 
-                    placeholder="Artist name" 
-                    required
-                    :disabled="isSubmitting" 
-                  />
+                  <input id="artist" v-model="albumForm.artist_name" placeholder="Artist name" required :disabled="isSubmitting" />
                 </div>
               </div>
 
               <div class="form-group">
                 <label for="cover">Cover URL *</label>
-                <input 
-                  id="cover" 
-                  v-model="albumForm.cover_url" 
-                  placeholder="Cover image URL" 
-                  required
-                  :disabled="isSubmitting" 
-                />
+                <input id="cover" v-model="albumForm.cover_url" placeholder="Cover image URL" required :disabled="isSubmitting" />
               </div>
 
               <div class="form-row">
                 <div class="form-group form-group-small">
                   <label for="year">Year *</label>
-                  <input 
-                    id="year" 
-                    type="number" 
-                    v-model.number="albumForm.year" 
-                    placeholder="Release year" 
-                    min="1890"
-                    :max="currentYear" 
-                    :disabled="isSubmitting" 
-                  />
+                  <input id="year" type="number" v-model.number="albumForm.year" placeholder="Release year" min="1890" :max="currentYear" :disabled="isSubmitting" />
                 </div>
+
                 <div class="form-group form-group-large">
-                  <label for="genres">Genres (comma-separated) *</label>
-                  <input 
-                    id="genres" 
-                    v-model="albumForm.genres" 
-                    placeholder="e.g. rock, pop, metal" 
-                    required
-                    :disabled="isSubmitting" 
-                  />
+                  <label for="genres">Genres *</label>
+                  <div class="genre-buttons">
+                    <button
+                    v-for="genre in existingGenres"
+                    :key="genre.id"
+                    type="button"
+                    @click="toggleGenre(genre)"
+                    :class="['genre-btn', selectedGenres.some(g => g.id === genre.id) ? 'selected' : '']"
+                    >
+                    {{ genre.name }}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -131,21 +94,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 
 const apiUrl = import.meta.env.VITE_API_URL
-
 const userStore = useUserStore()
 
-const props = defineProps<{
-  show: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:show': [value: boolean]
-  'album-inserted': []
-}>()
+const props = defineProps<{ show: boolean }>()
+const emit = defineEmits<{ 'update:show': [value: boolean], 'album-inserted': [] }>()
 
 const isSubmitting = ref(false)
 
@@ -154,9 +110,7 @@ interface AlbumForm {
   artist_name: string
   cover_url: string
   year: number
-  genres: string
 }
-
 interface GenreForm {
   name: string
   description: string
@@ -167,8 +121,7 @@ const albumForm = reactive<AlbumForm>({
   album_name: '',
   artist_name: '',
   cover_url: '',
-  year: 1969,
-  genres: ''
+  year: 1969
 })
 
 const genreForm = reactive<GenreForm>({
@@ -176,6 +129,9 @@ const genreForm = reactive<GenreForm>({
   description: '',
   imageUrl: ''
 })
+
+const existingGenres = ref<{ id: number; name: string }[]>([])
+const selectedGenres = ref<{ id: number; name: string }[]>([])
 
 const currentYear = new Date().getFullYear()
 const isAdmin = computed(() => userStore.user?.role_name === 'admin')
@@ -186,190 +142,111 @@ const closeModal = () => {
     resetForm()
   }
 }
-
 const resetForm = () => {
-  Object.assign(albumForm, {
-    album_name: '',
-    artist_name: '',
-    cover_url: '',
-    year: 1969,
-    genres: ''
-  })
-  Object.assign(genreForm, {
-    name: '',
-    description: '',
-    imageUrl: ''
-  })
+  Object.assign(albumForm, { album_name: '', artist_name: '', cover_url: '', year: 1969 })
+  Object.assign(genreForm, { name: '', description: '', imageUrl: '' })
+  selectedGenres.value = []
+}
+watch(() => props.show, (newValue) => { if (!newValue) resetForm() })
+
+const getAllGenres = async () => {
+  try {
+    const res = await fetch(`${apiUrl}/genres`)
+    if (!res.ok) throw new Error(`Failed to fetch genres: ${res.statusText}`)
+    existingGenres.value = await res.json()
+  } catch (err) {
+    console.error(err)
+  }
+}
+onMounted(getAllGenres)
+
+const toggleGenre = (genre: { id: number; name: string }) => {
+  const idx = selectedGenres.value.findIndex(g => g.id === genre.id)
+  if (idx >= 0) {
+    selectedGenres.value.splice(idx, 1)
+  } else {
+    selectedGenres.value.push(genre)
+  }
 }
 
-// Reset form when modal is closed
-watch(() => props.show, (newValue) => {
-  if (!newValue) {
-    resetForm()
-  }
-})
-
-// Fetch or create artist before inserting album
 const getOrCreateArtist = async (artistName: string) => {
   const encodedName = encodeURIComponent(artistName.trim())
   const res = await fetch(`${apiUrl}/artists/exists/${encodedName}`)
-
-  if (!res.ok) {
-    throw new Error(`Failed to check or create artist: ${res.statusText}`)
-  }
-
+  if (!res.ok) throw new Error(`Failed to check or create artist: ${res.statusText}`)
   const result = await res.json()
   return result.artist.artist_id
 }
 
 const submitGenre = async () => {
   if (isSubmitting.value) return
-
   try {
     isSubmitting.value = true
-
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-
     if (!userStore.loggedIn || !isAdmin.value) {
       alert('Only admins can insert genres.')
       return
     }
-
     const { name, description, imageUrl } = genreForm
-    if (!name.trim() || !description.trim() || !imageUrl.trim()) {
-      alert('Please fill in all required fields.')
-      return
-    }
-
     const response = await fetch(`${apiUrl}/genres`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        name: genreForm.name,
-        description: genreForm.description,
-        imageUrl: genreForm.imageUrl
-      })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, description, imageUrl })
     })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
       throw new Error(errorData.message || `Server error: ${response.status}`)
     }
-
-    alert(`Genre "${genreForm.name}" inserted successfully!`)
-    Object.assign(genreForm, {
-      name: '',
-      description: '',
-      imageUrl: ''
-    })
-
+    Object.assign(genreForm, { name: '', description: '', imageUrl: '' })
+    await getAllGenres() // refresh genre list
   } catch (err) {
     console.error('Failed to insert genre:', err)
-    alert(`Failed to insert genre: ${err instanceof Error ? err.message : 'Unknown error'}`)
   } finally {
     isSubmitting.value = false
   }
 }
 
-const validateGenresExist = async (genres: string[]): Promise<boolean> => {
-  const response = await fetch(`${apiUrl}/genres`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch genres from server.')
-  }
-
-  const existingGenres = await response.json() // Assume it returns an array of genres with `name` or `slug`
-
-  const existingSlugs = new Set(
-    existingGenres.map((g: any) => g.slug || g.name.toLowerCase().replace(/\s+/g, '-'))
-  )
-
-  const invalid = genres.filter((g) => !existingSlugs.has(g.toLowerCase().replace(/\s+/g, '-')))
-  if (invalid.length > 0) {
-    alert(`These genres do not exist: ${invalid.join(', ')}`)
-    return false
-  }
-
-  return true
-}
-
 const submitAlbum = async () => {
   if (isSubmitting.value) return
-
   try {
     isSubmitting.value = true
-
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-
     if (!userStore.loggedIn || !isAdmin.value) {
       alert('Only admins can insert albums.')
       return
     }
-
-    const { album_name, artist_name, cover_url, year, genres } = albumForm
-
-    if (!album_name.trim() || !artist_name.trim() || !cover_url.trim() || !genres.trim()) {
-      alert('Please fill in all required fields.')
-      return
-    }
-
-    const genreList = genres.split(',').map((g) => g.trim()).filter(Boolean)
-
-    // Validate that all genres exist
-    const allExist = await validateGenresExist(genreList)
-    if (!allExist) return
-
+    const { album_name, artist_name, cover_url, year } = albumForm
+    const genreList = selectedGenres.value.map(g => g.name)
     const artistId = await getOrCreateArtist(artist_name)
 
+    // Insert album
     const response = await fetch(`${apiUrl}/albums`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        album_name: album_name.trim(),
-        artist_id: artistId,
-        cover_url: cover_url.trim(),
-        year,
-      })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ album_name: album_name.trim(), artist_id: artistId, cover_url: cover_url.trim(), year })
     })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
       throw new Error(errorData.message || `Server error: ${response.status}`)
     }
 
-    // Assign genres to album
+    // Assign genres
     for (const genreName of genreList) {
       const assignRes = await fetch(`${apiUrl}/genres/assign-album`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          genreName,
-          albumName: album_name.trim()
-        })
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ genreName, albumName: album_name.trim() })
       })
-
       if (!assignRes.ok) {
         const assignErr = await assignRes.json().catch(() => ({ message: 'Unknown error' }))
         throw new Error(`Failed to assign genre "${genreName}": ${assignErr.message}`)
       }
     }
 
-    alert('Album inserted successfully!')
     emit('update:show', false)
     emit('album-inserted')
     resetForm()
-
   } catch (err) {
     console.error('Failed to insert album:', err)
-    alert(`Failed to insert album: ${err instanceof Error ? err.message : 'Unknown error'}`)
   } finally {
     isSubmitting.value = false
   }
@@ -396,7 +273,7 @@ const submitAlbum = async () => {
   max-width: 600px;
   max-height: 85vh;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 25px 50px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -522,7 +399,7 @@ const submitAlbum = async () => {
   outline: none;
   border-color: #48c774;
   background-color: rgba(72, 199, 116, 0.1);
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(72, 199, 116, 0.2),
     0 4px 12px rgba(72, 199, 116, 0.1);
   transform: translateY(-1px);
@@ -601,26 +478,26 @@ const submitAlbum = async () => {
     max-width: 95vw;
     margin: 10px;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .modal-actions {
     flex-direction: column-reverse;
     gap: 12px;
   }
-  
+
   .submit-btn,
   .cancel-btn {
     width: 100%;
   }
-  
+
   .modal-header {
     padding: 20px 24px;
   }
-  
+
   .insert-genre,
   .insert-album {
     padding: 24px;
@@ -644,4 +521,36 @@ const submitAlbum = async () => {
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+.genre-buttons {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.genre-btn {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.genre-btn.selected {
+  background: #48c774;
+  border-color: #48c774;
+}
+
+.genre-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.form-group .genre-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
 </style>

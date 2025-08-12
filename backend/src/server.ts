@@ -10,7 +10,7 @@ import { container } from 'tsyringe';
 import { UserController } from './controllers/UserController';
 import { AlbumController } from './controllers/AlbumController';
 import { ArtistController } from './controllers/ArtistController';
-import { GenreController } from '@controllers/GenreController';
+import { GenreController } from './controllers/GenreController';
 import { AuthController } from './controllers/AuthController';
 import { DatabaseService } from './services/DatabaseService';
 import { UserService } from './services/UserService';
