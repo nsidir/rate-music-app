@@ -14,7 +14,7 @@ export default ({ mode }: { mode: string }) => {
     plugins: [vue()],
   server: {
     host: true,
-    port: 80,
+    port: 4000,
     proxy: {
       '/api': {
         target: `http://${process.env.VITE_API_IP}:${process.env.VITE_PORT}`,
