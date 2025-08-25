@@ -12,13 +12,15 @@ export default ({ mode }: { mode: string }) => {
     base: '/',
     envDir: '..',
     plugins: [vue()],
-    server: {
-      proxy: {
-        '/api': {
-          target: `http://${process.env.VITE_API_IP}:${process.env.VITE_PORT}`,
-          changeOrigin: true,
-        },
+  server: {
+    host: true,
+    port: 80,
+    proxy: {
+      '/api': {
+        target: `http://${process.env.VITE_API_IP}:${process.env.VITE_PORT}`,
+        changeOrigin: true,
       },
     },
+  },
   })
 }
