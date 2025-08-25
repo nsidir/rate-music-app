@@ -15,6 +15,7 @@ export default ({ mode }: { mode: string }) => {
   server: {
     host: true,
     port: 4000,
+    allowedHosts: ['rate-music-app.onrender.com'],
     proxy: {
       '/api': {
         target: `http://${process.env.VITE_API_IP}:${process.env.VITE_PORT}`,
