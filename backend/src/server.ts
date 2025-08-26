@@ -24,6 +24,7 @@ import { toSlug } from './utility/toSlug';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const distPath = path.join(__dirname, "../../frontend/dist");
 
 // Dependency Injection setup
 container.registerSingleton(DatabaseService);
@@ -309,6 +310,18 @@ app.get('/api/user/profile/:id', (req, res, next) => {
 
 app.get('/api/user/profile/username/:username', (req, res, next) => {
   userController.getUserProfileByUsername(req, res).catch(next);
+});
+
+// --- Serve Vue dist build ---
+app.use(express.static(distPath));
+
+app.get("/", (req: Request, res: Response) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
+
+app.get("*", (req: Request, res: Response, next: NextFunction) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
 
