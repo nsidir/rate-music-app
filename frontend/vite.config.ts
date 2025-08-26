@@ -14,7 +14,7 @@ export default ({ mode }: { mode: string }) => {
     plugins: [vue()],
   server: {
     host: true,
-    port: 4000,
+    port: 4960,
     allowedHosts: ['rate-music-app.onrender.com'],
     proxy: {
       '/api': {
