@@ -1,7 +1,22 @@
 <template>
   <HeaderBar v-model:modelValue="searchQuery" />
   <div class="artist-page" v-if="artist">
-    <h1 class="artist-title">{{ artist.artist_name }}</h1>
+    <div style="text-align: center;">
+      <div style="position: relative; display: inline-block; margin: 0 auto 24px; max-width: 300px;">
+        <img 
+          :src="artist.image" 
+          alt="Artist Image" 
+          v-if="artist.image" 
+          style="display: block; width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);" 
+        />
+        <h1 
+          class="artist-title" 
+          style="position: absolute; bottom: 0; left: 0; right: 0; margin: 0; padding: 16px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; border-radius: 0 0 8px 8px;"
+        >
+          {{ artist.artist_name }}
+        </h1>
+      </div>
+    </div>
     <AlbumWall :albums="artist.albums" :searchQuery="searchQuery" />
   </div>
 </template>

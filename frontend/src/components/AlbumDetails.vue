@@ -49,6 +49,20 @@
         </div>
       </div>
 
+            <!-- Spotify Embed Section -->
+      <div class="spotify-section" v-if="album.spotify_embed">
+        <h3>Listen on Spotify</h3>
+        <iframe 
+          :src="`https://open.spotify.com/embed/album/${album.spotify_embed}`" 
+          width="100%" 
+          height="352" 
+          frameBorder="0" 
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+          loading="lazy"
+          style="border-radius:12px"
+        ></iframe>
+      </div>
+
       <!-- Reviews Section -->
       <div class="reviews-section">
         <h3>User Reviews</h3>
@@ -125,6 +139,7 @@ interface Album {
   favoriteCount: number | null;
   artist_slug: string;
   year: number;
+  spotify_embed: string;
   genres: {
   id: number;
   name: string;
@@ -159,6 +174,7 @@ async function fetchAlbumData() {
     const response = await fetch(`${apiUrl}/albums/${albumId}`);
     if (response.ok) {
       album.value = await response.json();
+      // console.log('Fetched album data:', album.value);
     } else {
       console.error('Failed to fetch album details');
       album.value = null;

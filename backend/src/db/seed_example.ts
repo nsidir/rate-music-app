@@ -67,13 +67,28 @@ async function seedDatabase(): Promise<SeedResult> {
         const heavyMetalGenre = await createGenreIfNotExists(genreController, 'Heavy Metal', 'Characterized by a thick, massive sound, highly amplified distortion, and extended guitar solos.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Heavy_metal_music.svg/1200px-Heavy_metal_music.svg.png');
         const psychedelicRockGenre = await createGenreIfNotExists(genreController, 'Psychedelic Rock', 'Rock which emerged in the mid-1960s that often attempts to emulate or enhance the effects of psychedelic drugs.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Psychedelic_rock.svg/1200px-Psychedelic_rock.svg.png');
         const hardRockGenre = await createGenreIfNotExists(genreController, 'Hard Rock', 'Characterized by aggressive vocals, distorted electric guitars, and a strong rhythm section.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Hard_rock_music.svg/1200px-Hard_rock_music.svg.png');
-
+        const jazzGenre = await createGenreIfNotExists(genreController, 'Jazz', 'Characterized by swing and blue notes, call and response vocals, polyrhythms and improvisation.', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Jazz_music.svg/1200px-Jazz_music.svg.png');
+        
         console.log('Created/found genres:', {
             rock: rockGenre.id,
             heavyMetal: heavyMetalGenre.id,
             psychedelicRock: psychedelicRockGenre.id,
-            hardRock: hardRockGenre.id
+            hardRock: hardRockGenre.id,
+            jazz: jazzGenre.id
         });
+
+        // Artists with their images
+        const [beatles, rollingStones, doors, ledZeppelin, milesDavis, blackSabbath] = await Promise.all([
+            artistController.createArtist({ artist_name: 'The Beatles', image: 'https://static.wikia.nocookie.net/disney/images/9/9a/The_Beatles.jpg/revision/latest?cb=20231219085050' }),
+            artistController.createArtist({ artist_name: 'The Rolling Stones', image: 'https://cdn-images.dzcdn.net/images/artist/2ceac184bc846327f60c5b0d4247cc7a/1900x1900-000000-81-0-0.jpg' }),
+            artistController.createArtist({ artist_name: 'The Doors', image: 'https://upload.wikimedia.org/wikipedia/commons/6/69/The_Doors_1968.JPG' }),
+            artistController.createArtist({ artist_name: 'Led Zeppelin', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Led_Zeppelin_-_promotional_image_%281971%29.jpg/1200px-Led_Zeppelin_-_promotional_image_%281971%29.jpg' }),
+            artistController.createArtist({ artist_name: 'Miles Davis', image: 'https://media.npr.org/assets/img/2019/08/21/gettyimages-84843312_wide-dcd53b58c0978aaa8fa8939bd50cca9f462fa922.jpg' }),
+            artistController.createArtist({ artist_name: 'Black Sabbath', image: 'https://www.rollingstone.com/wp-content/uploads/2019/09/black-sabbath-box-set-band.jpg?w=1581&h=1054&crop=1' })
+        ]);
+        const createdArtists = [beatles, rollingStones, doors, ledZeppelin, milesDavis, blackSabbath];
+        console.log('Created artists:', createdArtists);
+
 
         // Now define album data with actual genre IDs
         const albumData: Record<string, Array<AlbumSeed>> = {
@@ -83,6 +98,7 @@ async function seedDatabase(): Promise<SeedResult> {
                     cover_url: 'https://i.scdn.co/image/ab67616d0000b273dc30583ba717007b00cceb25',
                     year: 1969,
                     genre_id: rockGenre.id,
+                    spotify_embed: '0ETFjACtuP2ADo6LFhL6HN',
                 },
             ],
             'The Rolling Stones': [
@@ -91,6 +107,7 @@ async function seedDatabase(): Promise<SeedResult> {
                     cover_url: 'https://m.media-amazon.com/images/I/616sVyzbOHL._UF1000,1000_QL80_.jpg',
                     year: 1971,
                     genre_id: rockGenre.id,
+                    spotify_embed: '29m6DinzdaD0OPqWKGyMdz',
                 },
             ],
             'The Doors': [
@@ -99,6 +116,8 @@ async function seedDatabase(): Promise<SeedResult> {
                     cover_url: 'https://portalpopline.com.br/wp-content/uploads/2021/09/the-doors-la-woman-2.jpg',
                     year: 1971,
                     genre_id: psychedelicRockGenre.id,
+                    spotify_embed: '7IKUTIc9UWuVngyGPtqNHS',
+
                 },
             ],
             'Led Zeppelin': [
@@ -107,6 +126,16 @@ async function seedDatabase(): Promise<SeedResult> {
                     cover_url: 'https://i.scdn.co/image/ab67616d00001e02cd25ce73e3eddeedb995fcee',
                     year: 1971,
                     genre_id: hardRockGenre.id,
+                    spotify_embed: '5EyIDBAqhnlkAHqvPRwdbX',
+                },
+            ],
+            'Miles Davis': [
+                {
+                    album_name: 'In a Silent Way',
+                    cover_url: 'https://e.snmc.io/i/300/w/07455f99c5cfaff9f1ba99a1b4ba5e47/9687885',
+                    year: 1969,
+                    genre_id: jazzGenre.id,
+                    spotify_embed: '0Hs3BomCdwIWRhgT57x22T',
                 },
             ],
             'Black Sabbath': [
@@ -114,13 +143,15 @@ async function seedDatabase(): Promise<SeedResult> {
                     album_name: 'Paranoid',
                     cover_url: 'https://i.scdn.co/image/ab67616d0000b273cfa6ec6d5374ce8aec1a73f5',
                     year: 1970,
-                    genre_id: [heavyMetalGenre.id, hardRockGenre.id]
+                    genre_id: [heavyMetalGenre.id, hardRockGenre.id],
+                    spotify_embed: '7LGVdC9fFwgWYaIrZwsSv6',
                 },
                 {
                     album_name: 'Master of Reality',
                     cover_url: 'https://e.snmc.io/i/600/w/917829d5a491f497ac79f5031d3870eb/2918156/black-sabbath-master-of-reality-Cover-Art.jpg',
                     year: 1971,
                     genre_id: heavyMetalGenre.id,
+                    spotify_embed: '24fNwoIq4NLDf4ARJYAFN9',
                 },
             ],
         };
@@ -132,12 +163,12 @@ async function seedDatabase(): Promise<SeedResult> {
             await roleController.createRole(role);
         }
 
-        console.log('--- Artist Operations ---');
-        const artistNames = Object.keys(albumData);
-        const createdArtists = await Promise.all(
-            artistNames.map(name => artistController.createArtist({ artist_name: name }))
-        );
-        console.log('Inserted artists:', createdArtists);
+        // console.log('--- Artist Operations ---');
+        // const artistNames = Object.keys(albumData);
+        // const createdArtists = await Promise.all(
+        //     artistNames.map(name => artistController.createArtist({ artist_name: name }))
+        // );
+        // console.log('Inserted artists:', createdArtists);
 
         console.log('--- User Operations ---');
         const usersToCreate: CreateUser[] = [
@@ -190,7 +221,7 @@ async function seedDatabase(): Promise<SeedResult> {
         }
 
         return { createdUsers, createdAlbums, createdArtists, createdGenres: [
-            rockGenre, heavyMetalGenre, psychedelicRockGenre, hardRockGenre
+            rockGenre, heavyMetalGenre, psychedelicRockGenre, hardRockGenre, jazzGenre
         ] };
     } catch (error) {
         console.error('Error in seedDatabase:', error);
@@ -209,8 +240,9 @@ async function assignSubgenres(
         const heavyMetalGenre = createdGenres.find(g => g.name === 'Heavy Metal');
         const psychedelicRockGenre = createdGenres.find(g => g.name === 'Psychedelic Rock');
         const hardRockGenre = createdGenres.find(g => g.name === 'Hard Rock');
+        const jazzGenre = createdGenres.find(g => g.name === 'Jazz');
 
-        if (!rockGenre || !heavyMetalGenre || !psychedelicRockGenre || !hardRockGenre) {
+        if (!rockGenre || !heavyMetalGenre || !psychedelicRockGenre || !hardRockGenre || !jazzGenre) {
             throw new Error('Required genres not found for subgenre assignments');
         }
 
@@ -239,10 +271,12 @@ async function assignAlbums(
 
         const abbeyRoad = findAlbum('Abbey Road');
         const paranoid = findAlbum('Paranoid');
+        const masterOfReality = findAlbum('Master of Reality');
         const stickyFingers = findAlbum('Sticky Fingers');
         const laWoman = findAlbum('L.A. Woman');
+        const inASilentWay = findAlbum('In a Silent Way');
 
-        if (!johnDoe || !janeDoe || !h1den || !abbeyRoad || !paranoid || !stickyFingers || !laWoman) {
+        if (!johnDoe || !janeDoe || !h1den || !abbeyRoad || !paranoid || !stickyFingers || !laWoman || !inASilentWay || !masterOfReality) {
             throw new Error('Required records not found for album assignments');
         }
 

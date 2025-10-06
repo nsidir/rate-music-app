@@ -79,7 +79,7 @@ app.get('/api/artists/exists/:artistName', (req, res, next) => {
                 const artist = await artistController.getArtistBySlug(artistName);
                 return res.json({ exists: true, artist });
             } else {
-                const newArtist = await artistController.createArtist({ artist_name: artistName });
+                const newArtist = await artistController.createArtist({ artist_name: artistName, image: '' });
                 return res.json({ exists: false, artist: newArtist });
             }
         })

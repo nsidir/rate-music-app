@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, primaryKey, varchar, check, boolean, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, varchar, check, boolean, timestamp, text } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+// Roles table
 export const rolesTable = pgTable("roles", {
   role_name: varchar({ length: 50 }).primaryKey().notNull(),
 });
@@ -15,11 +16,12 @@ export const usersTable = pgTable("users", {
   role_name: varchar({ length: 50 }).notNull().references(() => rolesTable.role_name, { onDelete: "cascade" }),
 });
 
-// Artists table TODO: add cover image url
+// Artists table
 export const artistsTable = pgTable("artists", {
   artist_id: integer().primaryKey().generatedAlwaysAsIdentity(),
   artist_name: varchar({ length: 255 }).notNull().unique(),
   artist_slug: varchar({length: 255}).notNull().unique(),
+  image: varchar({ length: 255 })
 });
 
 // Albums table
@@ -34,6 +36,7 @@ export const albumsTable = pgTable(
     cover_url: varchar({ length: 255 }).notNull(),
     album_slug: varchar({ length: 255 }).notNull().unique(),
     year: integer("year").notNull(),
+    spotify_embed: varchar({ length: 255 }).unique(),
 },
   (table) => ({
     yearCheck: check(
@@ -66,7 +69,7 @@ export const usersToAlbumsTable = pgTable(
 
 // Genres table
 export const genresTable = pgTable('genres', {
-  id: integer('id').primaryKey().generatedAlwaysAsIdentity(), // do you need to specify the id col name?
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
   name: varchar('genre_name', { length: 255 }).notNull(),
   slug: varchar('genre_slug', { length: 255 }).notNull().unique(),
   description: varchar('description').notNull(),

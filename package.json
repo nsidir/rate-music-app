@@ -7,7 +7,7 @@
     "backend": "cd backend && npx tsx --watch src/server.ts",
     "test": "cd backend && npm test",
     "build": "npm install && cd frontend && npm install && npm run build && cd ../backend && npm install && cd ../"
-    },
+  },
   "keywords": [
     "music",
     "rating",

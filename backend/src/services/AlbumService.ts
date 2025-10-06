@@ -97,6 +97,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
         artist_name: artistsTable.artist_name,
+        spotify_embed: albumsTable.spotify_embed,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id));
@@ -115,6 +116,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
+        spotify_embed: albumsTable.spotify_embed,
       })
       .from(albumsTable)
       .where(eq(albumsTable.album_id, id));
@@ -133,6 +135,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
+        spotify_embed: albumsTable.spotify_embed,
       })
       .from(albumsTable)
       .where(eq(albumsTable.album_name, name));
@@ -171,6 +174,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         year: albumsTable.year,
         artist_name: artistsTable.artist_name,
         artist_slug: artistsTable.artist_slug,
+        spotify_embed: albumsTable.spotify_embed,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))
@@ -253,6 +257,7 @@ export class AlbumService implements IEntityService<Album, CreateAlbum> {
         cover_url: albumsTable.cover_url,
         album_slug: albumsTable.album_slug,
         year: albumsTable.year,
+        spotify_embed: albumsTable.spotify_embed,
       })
       .from(albumsTable)
       .innerJoin(artistsTable, eq(albumsTable.artist_id, artistsTable.artist_id))

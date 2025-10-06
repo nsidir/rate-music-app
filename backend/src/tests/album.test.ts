@@ -47,7 +47,9 @@ describe('Album API', () => {
 
         // 1. Create a dummy artist for the test
         const [artist] = await db.insert(artistsTable).values({
-            artist_name: 'Test Artist'
+            artist_name: 'Test Artist',
+            image: 'http://example.com/artist.jpg',
+            artist_slug: 'test-artist'
         }).returning();
         testArtistId = artist.artist_id;
 
@@ -55,7 +57,11 @@ describe('Album API', () => {
         const [album] = await db.insert(albumsTable).values({
             album_name: 'Test Album',
             artist_id: testArtistId,
-            cover_url: 'http://example.com/cover.jpg'
+            cover_url: 'http://example.com/cover.jpg',
+            year: 2023,
+            album_slug: 'test-album',
+            spotify_embed: 'http://spotify.com/embed/test'
+
         }).returning();
         testAlbumId = album.album_id;
     });
