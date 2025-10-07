@@ -312,6 +312,11 @@ app.get('/api/user/profile/username/:username', (req, res, next) => {
   userController.getUserProfileByUsername(req, res).catch(next);
 });
 
+// 404 handler for API routes
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API route not found" });
+});
+
 // --- Serve Vue dist build ---
 app.use(express.static(distPath));
 

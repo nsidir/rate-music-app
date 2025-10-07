@@ -19,6 +19,9 @@
     </div>
     <AlbumWall :albums="artist.albums" :searchQuery="searchQuery" />
   </div>
+  <div v-else class="not-found">
+    <h2>Loading artist or artist not found.</h2>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -97,6 +100,13 @@ onMounted(async () => {
   font-size: 1.13em;
   font-weight: 500;
   color: #60aaff;
+}
+
+.not-found {
+  text-align: center;
+  margin: 40px auto;
+  font-size: 1.2em;
+  color: #777;
 }
 
 

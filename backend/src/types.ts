@@ -1,4 +1,5 @@
 // src/types.ts
+// DTO equivalents
 import { InferSelectModel } from 'drizzle-orm';
 import { usersTable, albumsTable, usersToAlbumsTable, artistsTable, genresTable } from './db/schema';
 

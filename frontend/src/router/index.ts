@@ -7,6 +7,7 @@ import Signup from '../components/Signup.vue'
 import Profile from '../components/Profile.vue'
 import TopAlbums from '../components/TopAlbums.vue'
 import ArtistPage from '../components/ArtistPage.vue'
+import NotFound from '../components/NotFound.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -50,6 +51,10 @@ const routes: Array<RouteRecordRaw> = [
     name: 'ArtistPage',
     component: ArtistPage,
     props: true
+  },
+  { path: '/:pathMatch(.*)*', 
+    name: 'NotFound', 
+    component: NotFound 
   }
 ]
 
